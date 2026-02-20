@@ -1,4 +1,4 @@
-package com.braveboy.mos_haf
+package com.braveboy.mos_haf.domain.model
 
 data class Quran(
     val id: Int,

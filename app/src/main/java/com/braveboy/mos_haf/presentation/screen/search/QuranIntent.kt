@@ -1,4 +1,4 @@
-package com.braveboy.mos_haf
+package com.braveboy.mos_haf.presentation.screen.search
 
 sealed class QuranIntent {
     object LoadAllVerses : QuranIntent()

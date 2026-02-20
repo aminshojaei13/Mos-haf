@@ -1,4 +1,4 @@
-package com.braveboy.mos_haf
+package com.braveboy.mos_haf.presentation.screen.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.braveboy.mos_haf.domain.model.Quran
 
 @Composable
 fun QuranVerseCard(

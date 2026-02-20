@@ -14,7 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.braveboy.mos_haf.Quran
+import com.braveboy.mos_haf.domain.model.Quran
 
 @Composable
 fun QuranVerseCard1(

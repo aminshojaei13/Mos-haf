@@ -1,4 +1,6 @@
-package com.braveboy.mos_haf
+package com.braveboy.mos_haf.presentation.screen.search
+
+import com.braveboy.mos_haf.domain.model.Quran
 
 data class QuranState(
     val isLoading: Boolean = false,

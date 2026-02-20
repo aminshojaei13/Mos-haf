@@ -1,7 +1,8 @@
-package com.braveboy.mos_haf
+package com.braveboy.mos_haf.presentation.screen.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
