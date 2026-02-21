@@ -7,7 +7,7 @@ import java.io.IOException
 
 object DatabaseHelper {
     private const val TAG = "DatabaseHelper"
-    private const val DATABASE_NAME = "quran_database.db"
+    private const val DATABASE_NAME = "quran-text.db"
     
     /**
      * Copy database from assets to app's database directory
@@ -26,40 +26,9 @@ object DatabaseHelper {
             // Create parent directories if they don't exist
             dbFile.parentFile?.mkdirs()
             
-            // Try multiple possible asset paths
-            val assetPaths = listOf(
-                "databases/quran.db",
-                "quran.db",
-                "database/quran.db",
-                "db/quran.db"
-            )
+            val assetPath = "database/quran-text.db"
             
-            var inputStream: java.io.InputStream? = null
-            var selectedPath: String? = null
-
-            // Find which path exists
-            for (path in assetPaths) {
-                try {
-                    inputStream = context.assets.open(path)
-                    selectedPath = path
-                    Log.d(TAG, "Found database at assets path: $path")
-                    break
-                } catch (e: IOException) {
-                    // Path doesn't exist, try next
-                }
-            }
-            
-            if (inputStream == null) {
-                // List all files in assets to help debug
-                val assetFiles = context.assets.list("")?.joinToString() ?: "No files"
-                val databaseFiles = context.assets.list("databases")?.joinToString() ?: "No database folder"
-                
-                Log.e(TAG, "Could not find database file in assets")
-                Log.e(TAG, "Files in root assets: $assetFiles")
-                Log.e(TAG, "Files in databases folder: $databaseFiles")
-                
-                return false
-            }
+            val inputStream = context.assets.open(assetPath)
             
             // Copy the file
             FileOutputStream(dbFile).use { outputStream ->
@@ -92,9 +61,9 @@ object DatabaseHelper {
             Log.d(TAG, "Files in assets root: $rootFiles")
             
             // List databases folder if it exists
-            if (rootFiles.contains("databases")) {
-                val dbFiles = assetManager.list("databases")?.toList() ?: emptyList()
-                Log.d(TAG, "Files in databases folder: $dbFiles")
+            if (rootFiles.contains("database")) {
+                val dbFiles = assetManager.list("database")?.toList() ?: emptyList()
+                Log.d(TAG, "Files in database folder: $dbFiles")
             }
             
             // List all subdirectories

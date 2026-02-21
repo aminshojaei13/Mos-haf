@@ -10,7 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.presentation.screen.search.QuranScreen
 
 @Composable
-fun MainScreen() {
+fun ScreenNavController() {
     val navController = rememberNavController()
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {

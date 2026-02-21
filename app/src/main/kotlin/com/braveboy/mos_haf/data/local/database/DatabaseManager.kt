@@ -84,7 +84,7 @@ class DatabaseManager(private val context: Context) {
             WorkManager.getInstance(context)
                 .getWorkInfoByIdFlow(workRequest.id)
                 .collect { workInfo ->
-                    when (workInfo.state) {
+                    when (workInfo?.state) {
                         WorkInfo.State.SUCCEEDED -> {
                             if (isDatabaseReady()) {
                                 emit(DatabaseInitState.Success)

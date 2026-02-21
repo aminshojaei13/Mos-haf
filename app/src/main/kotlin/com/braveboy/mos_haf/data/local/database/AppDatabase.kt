@@ -18,7 +18,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun quranDao(): QuranDao
 
     companion object {
-        private const val DATABASE_NAME = "quran_database.db"
+        private const val DATABASE_NAME = "quran-text.db"
         private const val TAG = "AppDatabase"
 
         @Volatile
