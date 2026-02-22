@@ -1,4 +1,4 @@
-package com.example.quranapp.presentation.theme
+package com.braveboy.mos_haf.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

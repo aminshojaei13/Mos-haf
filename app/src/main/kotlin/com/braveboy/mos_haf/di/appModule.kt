@@ -1,6 +1,6 @@
 package com.braveboy.mos_haf.di
 
-import com.braveboy.mos_haf.presentation.screen.search.QuranViewModel
+import com.braveboy.mos_haf.presentation.feature.search.QuranViewModel
 import com.braveboy.mos_haf.data.local.database.AppDatabase
 import com.braveboy.mos_haf.data.local.datasource.LocalDataSource
 import com.braveboy.mos_haf.data.repository.QuranRepository

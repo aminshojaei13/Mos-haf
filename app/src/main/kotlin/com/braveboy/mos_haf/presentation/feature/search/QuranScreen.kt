@@ -1,4 +1,4 @@
-package com.braveboy.mos_haf.presentation.screen.search
+package com.braveboy.mos_haf.presentation.feature.search
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

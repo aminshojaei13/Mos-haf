@@ -7,7 +7,8 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.braveboy.mos_haf.presentation.screen.search.QuranScreen
+import com.braveboy.mos_haf.presentation.feature.home.HomeScreen
+import com.braveboy.mos_haf.presentation.feature.search.QuranScreen
 
 @Composable
 fun ScreenNavController() {
@@ -16,9 +17,12 @@ fun ScreenNavController() {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         NavHost(
             navController = navController,
-            startDestination = "quran",
+            startDestination = Screen.Home.route,
         ) {
-            composable("quran") {
+            composable(Screen.Home.route) {
+                HomeScreen()
+            }
+            composable(Screen.Quran.route) {
                 QuranScreen()
             }
         }
