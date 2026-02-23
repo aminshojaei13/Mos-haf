@@ -1,10 +1,7 @@
-
 package com.braveboy.mos_haf.presentation.feature.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
@@ -32,9 +30,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,12 +45,17 @@ fun HomeScreen() {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Hafiz", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { /*TODO*/ }) {
+                title = {
+                    Text(
+                        stringResource(R.string.label_top_app_bar),
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                /*navigationIcon = {
+                    IconButton(onClick = { *//*TODO*//* }) {
                         Icon(Icons.Default.Menu, contentDescription = "Menu")
                     }
-                },
+                },*/
                 actions = {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
@@ -87,8 +90,7 @@ fun HomeScreen() {
 @Composable
 fun LastReadCard() {
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF34A853).copy(alpha = 0.8f))
     ) {
@@ -97,9 +99,21 @@ fun LastReadCard() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = "Last Read", style = MaterialTheme.typography.bodySmall, color = Color.White)
-                Text(text = "الفاتحة", style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), color = Color.White)
-                Text(text = "Ayah no. 1", style = MaterialTheme.typography.bodyMedium, color = Color.White)
+                Text(
+                    text = stringResource(R.string.label_last_read),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.White
+                )
+                Text(
+                    text = "فاتحه",
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White
+                )
+                Text(
+                    text = "آیه شماره ۱",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White
+                )
                 Spacer(modifier = Modifier.height(16.dp))
                 Card(
                     shape = RoundedCornerShape(50),
@@ -110,15 +124,23 @@ fun LastReadCard() {
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Continue", color = Color.Black, fontWeight = FontWeight.Bold)
+                        Text(
+                            stringResource(R.string.label_continue),
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.Black)
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = null,
+                            tint = Color.Black
+                        )
                     }
                 }
             }
             // TODO: Add image resource
             Image(
-                painter = painterResource(id = R.drawable.ic_launcher_foreground), // Placeholder
+                painter = painterResource(id = R.drawable.ic_history_book), // Placeholder
                 contentDescription = null,
                 modifier = Modifier.size(100.dp)
             )
@@ -130,19 +152,41 @@ fun LastReadCard() {
 fun PopularSection() {
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            PopularCard(title = "Quran", imageRes = R.drawable.ic_launcher_foreground, color = Color(0xFFE6F5E9), modifier = Modifier.weight(1f))
-            PopularCard(title = "Listening", imageRes = R.drawable.ic_launcher_foreground, color = Color(0xFFFBE9E7), modifier = Modifier.weight(1f))
+            PopularCard(
+                modifier = Modifier.weight(1f),
+                title = stringResource(R.string.label_quran_tile),
+                imageRes = R.drawable.ic_quran,
+                color = Color(0xFFE6F5E9),
+            )
         }
+
         Spacer(modifier = Modifier.height(16.dp))
+
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            PopularCard(title = "Test", imageRes = R.drawable.ic_launcher_foreground, color = Color(0xFFFFF7E0), modifier = Modifier.weight(1f))
-            PopularCard(title = "Recite", imageRes = R.drawable.ic_launcher_foreground, color = Color(0xFFE3F2FD), modifier = Modifier.weight(1f))
+            PopularCard(
+                title = stringResource(R.string.label_khatm_quran),
+                imageRes = R.drawable.ic_khatm_quran,
+                color = Color(0xFFDCF6E1),
+                modifier = Modifier.weight(1f)
+            )
+
+            PopularCard(
+                title = stringResource(R.string.label_quran_voice),
+                imageRes = R.drawable.ic_listening,
+                color = Color(0xFFADBEB0),
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }
 
 @Composable
-fun PopularCard(title: String, imageRes: Int, color: Color, modifier: Modifier = Modifier) {
+fun PopularCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    imageRes: Int,
+    color: Color,
+) {
     Card(
         modifier = modifier.height(180.dp),
         shape = RoundedCornerShape(20.dp),
@@ -155,7 +199,14 @@ fun PopularCard(title: String, imageRes: Int, color: Color, modifier: Modifier =
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 20.sp
+                ),
+                color = Color.Black,
+            )
             Spacer(modifier = Modifier.height(8.dp))
             // TODO: Add image resources
             Image(
