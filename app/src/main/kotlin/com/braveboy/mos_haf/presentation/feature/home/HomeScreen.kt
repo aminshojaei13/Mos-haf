@@ -1,6 +1,7 @@
 package com.braveboy.mos_haf.presentation.feature.home
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,8 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -37,11 +36,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.R
+import com.braveboy.mos_haf.presentation.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -82,7 +84,9 @@ fun HomeScreen() {
                 modifier = Modifier.padding(start = 8.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-            PopularSection()
+            PopularSection(){
+                navController.navigate(Screen.Quran.route)
+            }
         }
     }
 }
@@ -149,11 +153,15 @@ fun LastReadCard() {
 }
 
 @Composable
-fun PopularSection() {
+fun PopularSection(
+    onClick : () -> Unit
+) {
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             PopularCard(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).clickable{
+                    onClick()
+                },
                 title = stringResource(R.string.label_quran_tile),
                 imageRes = R.drawable.ic_quran,
                 color = Color(0xFFE6F5E9),
@@ -221,5 +229,5 @@ fun PopularCard(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen(rememberNavController())
 }
