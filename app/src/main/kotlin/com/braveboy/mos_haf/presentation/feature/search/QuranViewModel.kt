@@ -53,7 +53,7 @@ class QuranViewModel(
     private fun loadVersesBySura(suraNumber: Int) {
         _state.update { it.copy(isLoading = true, error = null) }
         
-        getQuranVersesUseCase.bySura(suraNumber)
+        getQuranVersesUseCase.bySuraId(suraNumber)
             .onEach { verses ->
                 _state.update { 
                     it.copy(

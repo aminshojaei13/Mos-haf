@@ -85,7 +85,7 @@ fun HomeScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             PopularSection(){
-                navController.navigate(Screen.Quran.route)
+                navController.navigate(Screen.SuraList.route)
             }
         }
     }

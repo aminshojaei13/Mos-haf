@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,22 +20,37 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuranDetailScreen() {
+fun QuranDetailScreen(
+    navController: NavController
+) {
+    val viewModel = koinViewModel<QuranDetailViewModel>()
+    val stateVerse = viewModel.stateVerse.collectAsState()
+    val stateTranslate = viewModel.stateTranslate.collectAsState()
+    val loading = viewModel.loading.collectAsState()
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("الفاتحة", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "sura",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = { /* TODO: Handle back navigation */ }) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -58,51 +74,17 @@ fun QuranDetailScreen() {
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            item {
-                Text(
-                    text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-            // Placeholder for 7 verses of Al-Fatiha
-            item {
-                VerseItem(
-                    arabicText = "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
-                    translationText = "[All] praise is [due] to Allah, Lord of the worlds"
-                )
-            }
-            item {
-                VerseItem(
-                    arabicText = "الرَّحْمَٰنِ الرَّحِيمِ",
-                    translationText = "The Entirely Merciful, the Especially Merciful,"
-                )
-            }
-            item {
-                VerseItem(
-                    arabicText = "مَالِكِ يَوْمِ الدِّينِ",
-                    translationText = "Sovereign of the Day of Recompense."
-                )
-            }
-            item {
-                VerseItem(
-                    arabicText = "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
-                    translationText = "It is You we worship and You we ask for help."
-                )
-            }
-            item {
-                VerseItem(
-                    arabicText = "اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ",
-                    translationText = "Guide us to the straight path -"
-                )
-            }
-            item {
-                VerseItem(
-                    arabicText = "صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ",
-                    translationText = "The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray."
-                )
+            if (loading.value) {
+                item {
+                    CircularProgressIndicator()
+                }
+            } else {
+                items(stateVerse.value.size) {
+                    VerseItem(
+                        arabicText = stateVerse.value[it].text,
+                        translationText = stateTranslate.value.getOrNull(it) ?: ""
+                    )
+                }
             }
         }
     }
@@ -134,5 +116,7 @@ fun VerseItem(arabicText: String, translationText: String) {
 @Preview(showBackground = true)
 @Composable
 fun QuranDetailScreenPreview() {
-    QuranDetailScreen()
+    QuranDetailScreen(
+        navController = rememberNavController()
+    )
 }

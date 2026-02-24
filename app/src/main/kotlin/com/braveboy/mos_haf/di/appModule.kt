@@ -5,6 +5,8 @@ import com.braveboy.mos_haf.data.local.database.AppDatabase
 import com.braveboy.mos_haf.data.local.datasource.LocalDataSource
 import com.braveboy.mos_haf.data.repository.QuranRepository
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
+import com.braveboy.mos_haf.presentation.feature.detail.QuranDetailViewModel
+import com.braveboy.mos_haf.presentation.feature.suralist.SuraListViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.core.module.dsl.singleOf
@@ -29,4 +31,6 @@ val appModule = module {
 
     // ViewModels
     viewModelOf(::QuranViewModel)
+    viewModelOf(::SuraListViewModel)
+    viewModelOf(::QuranDetailViewModel)
 }

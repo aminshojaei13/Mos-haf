@@ -7,9 +7,10 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.braveboy.mos_haf.data.local.entity.QuranCleanTextEntity
 import com.braveboy.mos_haf.data.local.entity.QuranEntity
+import com.braveboy.mos_haf.data.local.entity.QuranTranslateEntity
 
 @Database(
-    entities = [QuranEntity::class, QuranCleanTextEntity::class],
+    entities = [QuranEntity::class, QuranCleanTextEntity::class, QuranTranslateEntity::class],
     version = 1,
     exportSchema = false
 )

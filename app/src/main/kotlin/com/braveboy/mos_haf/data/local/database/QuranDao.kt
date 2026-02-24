@@ -23,6 +23,9 @@ interface QuranDao {
     @Query("SELECT * FROM quran_text WHERE sura = :suraNumber ORDER BY aya")
     fun getVersesBySura(suraNumber: Int): Flow<List<QuranEntity>>
 
+    @Query("SELECT * FROM quran_text WHERE sura_name = :suraName ORDER BY aya")
+    fun getVersesBySura(suraName: String): List<QuranEntity>
+
     @Query("SELECT * FROM quran_text WHERE page = :pageNumber ORDER BY `index`")
     fun getVersesByPage(pageNumber: Int): Flow<List<QuranEntity>>
 
@@ -31,4 +34,10 @@ interface QuranDao {
 
     @Query("SELECT COUNT(*) FROM quran_text")
     fun getQuranCount(): Int
+
+    @Query(" SELECT DISTINCT sura_name FROM quran_text ORDER BY sura ASC")
+    fun getAllSura(): List<String>
+
+    @Query(" SELECT trtext FROM suretranslate WHERE sura = :suraNumber ORDER BY aya")
+    fun getSuraTranslate(suraNumber: Int): List<String>
 }

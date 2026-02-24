@@ -9,5 +9,8 @@ sealed class Screen(val route: String) {
     @Serializable
     object Search: Screen("search_screen")
     @Serializable
-    object Quran: Screen("Quran_screen")
+    data class QuranDetail(val sura: String): Screen("quran_detail_screen")
+
+    @Serializable
+    object SuraList: Screen("sura_list_screen")
 }
