@@ -2,16 +2,9 @@ package com.braveboy.mos_haf.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val Green800 = Color(0xFF2E7D32)
+val Green600 = Color(0xFF4CAF50)
+val Green100 = Color(0xFFA5D6A7)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
-
-// Islamic theme colors
-val IslamicGreen = Color(0xFF1B5E20)
-val IslamicGold = Color(0xFFFFD700)
-val IslamicBrown = Color(0xFF8B4513)
-val IslamicTeal = Color(0xFF00796B)
+val Cream = Color(0xFF151414)
+val FloralWhite = Color(0xFF1E1D1D)

@@ -24,15 +24,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.R
+import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +48,7 @@ fun QuranDetailScreen(
                 title = {
                     Text(
                         text = state.suraName,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleLarge
                     )
                 },
                 navigationIcon = {
@@ -63,10 +62,10 @@ fun QuranDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF2E7D32), // A green shade
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -85,7 +84,7 @@ fun QuranDetailScreen(
                         text = stringResource(R.string.label_bismillah),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.headlineMedium
                     )
                 }
                 itemsIndexed(state.verses) { index, verse ->
@@ -112,14 +111,13 @@ fun VerseItem(arabicText: String, translationText: String) {
             text = arabicText,
             modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = translationText,
             modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodyLarge,
-            color = Color.Gray
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
         )
     }
 }
@@ -127,7 +125,9 @@ fun VerseItem(arabicText: String, translationText: String) {
 @Preview(showBackground = true)
 @Composable
 fun QuranDetailScreenPreview() {
-    QuranDetailScreen(
-        navController = rememberNavController()
-    )
+    MoshafTheme {
+        QuranDetailScreen(
+            navController = rememberNavController()
+        )
+    }
 }

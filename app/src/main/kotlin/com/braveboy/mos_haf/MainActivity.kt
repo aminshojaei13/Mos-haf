@@ -10,7 +10,7 @@ import androidx.compose.material3.Surface
 import com.braveboy.mos_haf.data.local.database.AppDatabase
 import com.braveboy.mos_haf.di.appModule
 import com.braveboy.mos_haf.presentation.navigation.ScreenNavController
-import com.braveboy.mos_haf.ui.theme.QuranAppTheme
+import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            QuranAppTheme {
+            MoshafTheme {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {

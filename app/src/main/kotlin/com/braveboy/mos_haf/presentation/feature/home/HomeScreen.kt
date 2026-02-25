@@ -29,17 +29,15 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.presentation.navigation.Screen
+import com.braveboy.mos_haf.ui.theme.MoshafTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,21 +48,16 @@ fun HomeScreen(navController: NavController) {
                 title = {
                     Text(
                         stringResource(R.string.label_top_app_bar),
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleLarge
                     )
                 },
-                /*navigationIcon = {
-                    IconButton(onClick = { *//*TODO*//* }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
-                    }
-                },*/
                 actions = {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
@@ -92,7 +85,7 @@ fun LastReadCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF34A853).copy(alpha = 0.8f))
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f))
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
@@ -102,23 +95,23 @@ fun LastReadCard() {
                 Text(
                     text = stringResource(R.string.label_last_read),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
                     text = "فاتحه",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                    color = Color.White
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
                     text = "آیه شماره ۱",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Card(
                     shape = RoundedCornerShape(50),
                     onClick = {},
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -126,21 +119,20 @@ fun LastReadCard() {
                     ) {
                         Text(
                             stringResource(R.string.label_continue),
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
             }
-            // TODO: Add image resource
             Image(
-                painter = painterResource(id = R.drawable.ic_history_book), // Placeholder
+                painter = painterResource(id = R.drawable.ic_history_book),
                 contentDescription = null,
                 modifier = Modifier.size(100.dp)
             )
@@ -160,7 +152,6 @@ fun PopularSection(
                 },
                 title = stringResource(R.string.label_quran_tile),
                 imageRes = R.drawable.ic_quran,
-                color = Color(0xFFE6F5E9),
             )
         }
 
@@ -170,14 +161,12 @@ fun PopularSection(
             PopularCard(
                 title = stringResource(R.string.label_khatm_quran),
                 imageRes = R.drawable.ic_khatm_quran,
-                color = Color(0xFFDCF6E1),
                 modifier = Modifier.weight(1f)
             )
 
             PopularCard(
                 title = stringResource(R.string.label_quran_voice),
                 imageRes = R.drawable.ic_listening,
-                color = Color(0xFFADBEB0),
                 modifier = Modifier.weight(1f)
             )
         }
@@ -189,12 +178,11 @@ fun PopularCard(
     modifier: Modifier = Modifier,
     title: String,
     imageRes: Int,
-    color: Color,
 ) {
     Card(
         modifier = modifier.height(180.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = color)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
     ) {
         Column(
             modifier = Modifier
@@ -205,14 +193,10 @@ fun PopularCard(
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 20.sp
-                ),
-                color = Color.Black,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSecondary,
             )
             Spacer(modifier = Modifier.height(8.dp))
-            // TODO: Add image resources
             Image(
                 painter = painterResource(id = imageRes),
                 contentDescription = title,
@@ -225,5 +209,7 @@ fun PopularCard(
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(rememberNavController())
+    MoshafTheme {
+        HomeScreen(rememberNavController())
+    }
 }

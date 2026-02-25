@@ -19,13 +19,13 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.braveboy.mos_haf.presentation.navigation.Screen
+import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
+import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,17 +37,17 @@ fun SuraListScreen(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("لیست سوره‌ها", fontWeight = FontWeight.Bold) },
+                title = { Text("لیست سوره‌ها", style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color(0xFF2E7D32), // A green shade
-                    titleContentColor = Color.White,
-                    navigationIconContentColor = Color.White,
-                    actionIconContentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         }
@@ -71,12 +71,20 @@ fun SuraListScreen(navController: NavController) {
                             .padding(vertical = 16.dp, horizontal = 16.dp),
                         text = state.value[it],
                         textAlign = TextAlign.Start,
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SuraListScreenPreview() {
+    MoshafTheme {
+        SuraListScreen(rememberNavController())
     }
 }
