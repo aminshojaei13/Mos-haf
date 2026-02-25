@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -21,9 +22,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -33,19 +36,17 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuranDetailScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: QuranDetailViewModel = koinViewModel()
 ) {
-    val viewModel = koinViewModel<QuranDetailViewModel>()
-    val stateVerse = viewModel.stateVerse.collectAsState()
-    val stateTranslate = viewModel.stateTranslate.collectAsState()
-    val loading = viewModel.loading.collectAsState()
+    val state by viewModel.state.collectAsState()
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "sura",
+                        text = state.suraName,
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -68,21 +69,28 @@ fun QuranDetailScreen(
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-        ) {
-            if (loading.value) {
+        if (state.isLoading) {
+            CircularProgressIndicator()
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+            ) {
                 item {
-                    CircularProgressIndicator()
+                    Text(
+                        text = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-            } else {
-                items(stateVerse.value.size) {
+                itemsIndexed(state.verses) { index, verse ->
                     VerseItem(
-                        arabicText = stateVerse.value[it].text,
-                        translationText = stateTranslate.value.getOrNull(it) ?: ""
+                        arabicText = verse.text,
+                        translationText = state.translations.getOrNull(index) ?: ""
                     )
                 }
             }

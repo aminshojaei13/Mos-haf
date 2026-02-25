@@ -1,5 +1,6 @@
 package com.braveboy.mos_haf.presentation.feature.detail
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,49 +11,70 @@ import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class QuranDetailViewModel (
+data class QuranDetailState(
+    val verses: List<Quran> = emptyList(),
+    val translations: List<String> = emptyList(),
+    val suraName: String = "",
+    val isLoading: Boolean = true
+)
+
+class QuranDetailViewModel(
     savedStateHandle: SavedStateHandle,
     private val getQuranVersesUseCase: GetQuranVersesUseCase
-): ViewModel() {
+) : ViewModel() {
 
-    private var suraName = ""
-
-    var loading = MutableStateFlow(false)
-    private val _stateVerse = MutableStateFlow( emptyList<Quran>())
-    val stateVerse: StateFlow<List<Quran>> = _stateVerse
-
-    private val _stateTranslate = MutableStateFlow( emptyList<String>())
-    val stateTranslate: StateFlow<List<String>> = _stateTranslate
+    private val _state = MutableStateFlow(QuranDetailState())
+    val state: StateFlow<QuranDetailState> = _state.asStateFlow()
 
     init {
-        suraName = savedStateHandle.toRoute<QuranDetail>().sura
+        val suraName: String = savedStateHandle.toRoute<QuranDetail>().sura
+        _state.update { it.copy(suraName = suraName) }
+        loadVersesAndTranslations(suraName)
+    }
+
+    private fun loadVersesAndTranslations(suraName: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            loadVersesBySura(suraName)
-        }
-    }
+            _state.update { it.copy(isLoading = true) }
 
-    private fun loadVersesBySura(suraName: String) {
-        _stateVerse.update {
-            getQuranVersesUseCase.bySuraName(suraName)
-        }
-        loadTranslateBySura()
-    }
-
-    private fun loadTranslateBySura() {
-        _stateTranslate.update {
-            getQuranVersesUseCase.getSuraTranslate(stateVerse.value.first().sura)
-        }
-        shouldShow()
-    }
-
-    fun shouldShow() {
-        if (stateVerse.value.isNotEmpty() && stateTranslate.value.isNotEmpty()){
-            loading.update {
-                false
+            var verses = getQuranVersesUseCase.bySuraName(suraName)
+            val translations = if (verses.isNotEmpty()) {
+                getQuranVersesUseCase.getSuraTranslate(verses.first().sura)
+            } else {
+                emptyList()
             }
+
+            if (verses.isNotEmpty()) {
+                val firstVerse = verses.first()
+                val bismillah = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+                if (firstVerse.text.contains(bismillah)) {
+                    val modifiedText = firstVerse.text.replace(bismillah, "").trim()
+                    val modifiedFirstVerse = firstVerse.copy(text = modifiedText)
+                    Log.d("toni", "modifiedFirstVerse: $modifiedFirstVerse")
+                    verses = verses.toMutableList().apply { set(0, modifiedFirstVerse) }
+                    Log.d("toni", "verses: $verses")
+                }
+
+                _state.update {
+                    it.copy(
+                        verses = verses,
+                        translations = translations,
+                        isLoading = false
+                    )
+                }
+            } else {
+                _state.update {
+                    it.copy(
+                        verses = verses,
+                        translations = translations,
+                        isLoading = false
+                    )
+                }
+            }
+
         }
     }
 }
