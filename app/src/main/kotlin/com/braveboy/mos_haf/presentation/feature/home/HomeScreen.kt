@@ -77,13 +77,9 @@ fun HomeScreen(navController: NavController) {
                 .fillMaxSize()
         ) {
             LastReadCard()
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "Popular",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                modifier = Modifier.padding(start = 8.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+
+            Spacer(modifier = Modifier.height(40.dp))
+
             PopularSection(){
                 navController.navigate(Screen.SuraList.route)
             }
