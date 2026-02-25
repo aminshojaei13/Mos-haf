@@ -48,7 +48,7 @@ fun HomeScreen(navController: NavController) {
                 title = {
                     Text(
                         stringResource(R.string.label_top_app_bar),
-                        style = MaterialTheme.typography.titleLarge
+                        style = MaterialTheme.typography.headlineLarge
                     )
                 },
                 actions = {
@@ -73,8 +73,19 @@ fun HomeScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            PopularSection(){
-                navController.navigate(Screen.SuraList.route)
+            PopularSection { tile ->
+                when{
+                    tile == Tile.QURAN -> {
+                        navController.navigate(Screen.SuraList.route)
+                    }
+                    tile == Tile.KHATM -> {
+                        navController.navigate(Screen.Search.route)
+                    }
+                    tile == Tile.VOICE -> {
+
+                    }
+                }
+
             }
         }
     }
@@ -142,13 +153,13 @@ fun LastReadCard() {
 
 @Composable
 fun PopularSection(
-    onClick : () -> Unit
+    onClick : (Tile) -> Unit
 ) {
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             PopularCard(
                 modifier = Modifier.weight(1f).clickable{
-                    onClick()
+                    onClick(Tile.QURAN)
                 },
                 title = stringResource(R.string.label_quran_tile),
                 imageRes = R.drawable.ic_quran,
@@ -159,15 +170,19 @@ fun PopularSection(
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             PopularCard(
+                modifier = Modifier.weight(1f).clickable{
+                    onClick(Tile.KHATM)
+                },
                 title = stringResource(R.string.label_khatm_quran),
                 imageRes = R.drawable.ic_khatm_quran,
-                modifier = Modifier.weight(1f)
             )
 
             PopularCard(
+                modifier = Modifier.weight(1f).clickable{
+                    onClick(Tile.VOICE)
+                },
                 title = stringResource(R.string.label_quran_voice),
                 imageRes = R.drawable.ic_listening,
-                modifier = Modifier.weight(1f)
             )
         }
     }
@@ -204,6 +219,12 @@ fun PopularCard(
             )
         }
     }
+}
+
+enum class Tile {
+    QURAN,
+    KHATM,
+    VOICE,
 }
 
 @Preview(showBackground = true)

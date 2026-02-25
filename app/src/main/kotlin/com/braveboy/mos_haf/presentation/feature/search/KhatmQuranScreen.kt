@@ -37,7 +37,7 @@ import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuranScreen() {
+fun KhatmQuranScreen() {
     val viewModel = koinViewModel<QuranViewModel>()
     val state = viewModel.state.collectAsStateWithLifecycle()
 
@@ -60,8 +60,8 @@ fun QuranScreen() {
 
 @Composable
 fun QuranContent(
-    state: QuranState,
-    onIntent: (QuranIntent) -> Unit,
+    state: KhatmQuranState,
+    onIntent: (KhatmQuranIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var suraInput by remember { mutableStateOf("") }
@@ -94,7 +94,7 @@ fun QuranContent(
                     Button(
                         onClick = {
                             suraInput.toIntOrNull()?.let {
-                                onIntent(QuranIntent.LoadVersesBySura(it))
+                                onIntent(KhatmQuranIntent.LoadVersesBySura(it))
                             }
                         }
                     ) {
@@ -119,7 +119,7 @@ fun QuranContent(
                     Button(
                         onClick = {
                             pageInput.toIntOrNull()?.let {
-                                onIntent(QuranIntent.LoadVersesByPage(it))
+                                onIntent(KhatmQuranIntent.LoadVersesByPage(it))
                             }
                         }
                     ) {
@@ -134,7 +134,7 @@ fun QuranContent(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    TextButton(onClick = { onIntent(QuranIntent.RefreshData) }) {
+                    TextButton(onClick = { onIntent(KhatmQuranIntent.RefreshData) }) {
                         Text("تحديث")
                     }
                 }
@@ -146,7 +146,7 @@ fun QuranContent(
             state.isLoading -> LoadingIndicator()
             state.error != null -> ErrorView(
                 message = state.error,
-                onRetry = { onIntent(QuranIntent.RefreshData) }
+                onRetry = { onIntent(KhatmQuranIntent.RefreshData) }
             )
 
             else -> {

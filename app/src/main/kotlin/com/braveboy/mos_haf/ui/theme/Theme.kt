@@ -24,16 +24,16 @@ private val DarkColorScheme = darkColorScheme(
     surface = FloralWhite,
     onPrimary = Color.White,
     onSecondary = Color.Black,
-    onTertiary = Color.White,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
+    onTertiary = Color.Black,
+    onBackground = Color.White,
+    onSurface = Color.White,
 )
 
 private val LightColorScheme = lightColorScheme(
     primary = Green600,
     secondary = Green100,
     tertiary = Green800,
-    background = FloralWhite,
+    background = Color.White,
     surface = Cream,
     onPrimary = Color.White,
     onSecondary = Color.Black,

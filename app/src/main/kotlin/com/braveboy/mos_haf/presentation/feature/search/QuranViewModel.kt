@@ -14,15 +14,15 @@ class QuranViewModel(
     private val getQuranVersesUseCase: GetQuranVersesUseCase
 ) : ViewModel() {
     
-    private val _state = MutableStateFlow(QuranState())
-    val state: StateFlow<QuranState> = _state
+    private val _state = MutableStateFlow(KhatmQuranState())
+    val state: StateFlow<KhatmQuranState> = _state
     
-    fun handleIntent(intent: QuranIntent) {
+    fun handleIntent(intent: KhatmQuranIntent) {
         when (intent) {
-            is QuranIntent.LoadAllVerses -> loadAllVerses()
-            is QuranIntent.LoadVersesBySura -> loadVersesBySura(intent.suraNumber)
-            is QuranIntent.LoadVersesByPage -> loadVersesByPage(intent.pageNumber)
-            is QuranIntent.RefreshData -> refreshData()
+            is KhatmQuranIntent.LoadAllVerses -> loadAllVerses()
+            is KhatmQuranIntent.LoadVersesBySura -> loadVersesBySura(intent.suraNumber)
+            is KhatmQuranIntent.LoadVersesByPage -> loadVersesByPage(intent.pageNumber)
+            is KhatmQuranIntent.RefreshData -> refreshData()
         }
     }
     
