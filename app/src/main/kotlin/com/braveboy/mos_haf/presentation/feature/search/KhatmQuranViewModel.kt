@@ -47,15 +47,20 @@ class KhatmQuranViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true, error = null) }
 
-            getQuranVersesUseCase.byDetailedRange(startSura, startAya, endSura, endAya)
-                .let { verses ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            verses = verses
-                        )
-                    }
+            try {
+                val verses = getQuranVersesUseCase.byDetailedRange(startSura, startAya, endSura, endAya)
+                val translates = getQuranVersesUseCase.getByTranslateRange(startSura, startAya, endSura, endAya)
+
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        verses = verses,
+                        translations = translates
+                    )
                 }
+            }catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Error loading verse or translate") }
+            }
         }
 
     }

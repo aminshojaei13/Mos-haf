@@ -51,4 +51,13 @@ interface QuranDao {
 
     @Query(" SELECT trtext FROM suretranslate WHERE sura = :suraNumber ORDER BY aya")
     fun getSuraTranslate(suraNumber: Int): List<String>
+
+    @Query("""
+        SELECT trtext FROM suretranslate 
+        WHERE (`id` >= (SELECT `id` FROM suretranslate WHERE sura = :startSura AND aya = :startAya LIMIT 1))
+        AND (`id` <= (SELECT `id` FROM suretranslate WHERE sura = :endSura AND aya = :endAya LIMIT 1))
+        ORDER BY `id`
+    """)
+    fun getByTranslateRange(startSura: Int, startAya: Int, endSura: Int, endAya: Int): List<String>
+
 }

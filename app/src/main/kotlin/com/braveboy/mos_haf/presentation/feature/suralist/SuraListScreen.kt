@@ -63,35 +63,26 @@ fun SuraListScreen(navController: NavController) {
                 .padding(16.dp)
         ) {
             items(state.value.size) {
-
-                /*OutlinedCard(
-                    onClick = {
-                        navController.navigate(QuranDetail(state.value[it]))
-                    }
-                ) {*/
-                    Text(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .fillMaxSize()
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.secondary,
-                                shape = MaterialTheme.shapes.large
-                            )
-                            .background(Color.Transparent)
-                            .padding(vertical = 16.dp, horizontal = 16.dp)
-                            .clickable{
-                                navController.navigate(QuranDetail(state.value[it]))
-                            },
-                        text = state.value[it],
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-                //Spacer(modifier = Modifier.height(16.dp))
-
-            //}
+                Text(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .fillMaxSize()
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.secondary,
+                            shape = MaterialTheme.shapes.large
+                        )
+                        .background(Color.Transparent)
+                        .padding(vertical = 16.dp, horizontal = 16.dp)
+                        .clickable {
+                            navController.navigate(QuranDetail(state.value[it]))
+                        },
+                    text = state.value[it],
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
     }
 }

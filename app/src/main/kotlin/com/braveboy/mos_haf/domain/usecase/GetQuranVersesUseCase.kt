@@ -22,4 +22,7 @@ class GetQuranVersesUseCase(private val repository: QuranRepository) {
     fun getAyaCounts(): List<Int> = repository.getAyaCounts()
 
     fun getSuraTranslate(suraNumber: Int): List<String> = repository.getSuraTranslate(suraNumber)
+
+    fun getByTranslateRange(startSura: Int, startAya: Int, endSura: Int, endAya: Int): List<String> =
+        repository.getByTranslateRange(startSura,startAya,endSura,endAya)
 }

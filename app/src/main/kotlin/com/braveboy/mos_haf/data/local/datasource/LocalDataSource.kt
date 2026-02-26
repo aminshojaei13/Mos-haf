@@ -44,4 +44,6 @@ class LocalDataSource(private val database: AppDatabase) {
 
     fun getSuraTranslate(suraNumber: Int): List<String> = database.quranDao().getSuraTranslate(suraNumber)
 
+    fun getByTranslateRange(startSura: Int, startAya: Int, endSura: Int, endAya: Int): List<String> =
+        database.quranDao().getByTranslateRange(startSura,startAya,endSura,endAya)
 }

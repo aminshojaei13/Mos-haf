@@ -36,7 +36,7 @@ fun ScreenNavController() {
                 )
             }
             composable(Screen.Search.route) {
-                KhatmQuranScreen()
+                KhatmQuranScreen(navController)
             }
         }
     }
