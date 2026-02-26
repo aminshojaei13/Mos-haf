@@ -74,14 +74,14 @@ fun HomeScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(40.dp))
 
             PopularSection { tile ->
-                when{
-                    tile == Tile.QURAN -> {
+                when (tile) {
+                    Tile.QURAN -> {
                         navController.navigate(Screen.SuraList.route)
                     }
-                    tile == Tile.KHATM -> {
+                    Tile.KHATM -> {
                         navController.navigate(Screen.Search.route)
                     }
-                    tile == Tile.VOICE -> {
+                    Tile.VOICE -> {
 
                     }
                 }

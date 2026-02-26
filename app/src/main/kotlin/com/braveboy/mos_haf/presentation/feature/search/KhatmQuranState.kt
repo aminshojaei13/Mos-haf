@@ -5,6 +5,8 @@ import com.braveboy.mos_haf.domain.model.Quran
 data class KhatmQuranState(
     val isLoading: Boolean = false,
     val verses: List<Quran> = emptyList(),
+    val suraNames: List<String> = emptyList(),
+    val ayaCounts: List<Int> = emptyList(),
     val error: String? = null,
     val currentPage: Int = 1,
     val totalVerses: Int = 0

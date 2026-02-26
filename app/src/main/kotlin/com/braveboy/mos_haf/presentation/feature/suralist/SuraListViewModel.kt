@@ -1,6 +1,5 @@
 package com.braveboy.mos_haf.presentation.feature.suralist
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
@@ -25,24 +24,7 @@ class SuraListViewModel(
 
     private fun getAllSura() {
         getQuranVersesUseCase.getAllSura().let { verses ->
-            Log.d("xavi", "vie: $verses")
             _state.update { verses }
-            Log.d("xavi", "vie sta: ${state.value}")
-
         }
-            /*.onEach { verses ->
-                _state.update {
-                    verses
-                }
-            }
-            .catch { exception ->
-                *//*_state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = exception.message ?: "Error loading sura verses"
-                    )
-                }*//*
-            }
-            .launchIn(viewModelScope)*/
     }
 }

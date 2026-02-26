@@ -38,6 +38,16 @@ class QuranRepository(private val localDataSource: LocalDataSource) {
             entities.map { it.toDomain() }
         }
 
+    fun getVersesByDetailedRange(
+        startSura: Int,
+        startAya: Int,
+        endSura: Int,
+        endAya: Int
+    ): List<Quran> =
+        localDataSource.getVersesByDetailedRange(startSura, startAya, endSura, endAya).map {
+            it.toDomain()
+        }
+
     fun getAllQuranCleanText(): Flow<List<QuranCleanText>> =
         localDataSource.getAllQuranCleanText().map { entities ->
             entities.map { it.toDomain() }
@@ -47,7 +57,10 @@ class QuranRepository(private val localDataSource: LocalDataSource) {
 
     fun getAllSura(): List<String> = localDataSource.getAllSura()
 
-    fun getSuraTranslate(suraNumber: Int): List<String> = localDataSource.getSuraTranslate(suraNumber)
+    fun getAyaCounts(): List<Int> = localDataSource.getAyaCounts()
+
+    fun getSuraTranslate(suraNumber: Int): List<String> =
+        localDataSource.getSuraTranslate(suraNumber)
 
     private fun QuranEntity.toDomain(): Quran = Quran(
         id = id,

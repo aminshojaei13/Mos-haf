@@ -1,6 +1,5 @@
 package com.braveboy.mos_haf.domain.usecase
 
-import android.util.Log
 import com.braveboy.mos_haf.data.repository.QuranRepository
 import com.braveboy.mos_haf.domain.model.Quran
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +14,12 @@ class GetQuranVersesUseCase(private val repository: QuranRepository) {
 
     fun byPage(pageNumber: Int): Flow<List<Quran>> = repository.getVersesByPage(pageNumber)
 
+    fun byDetailedRange(startSura: Int, startAya: Int, endSura: Int, endAya: Int): List<Quran> =
+        repository.getVersesByDetailedRange(startSura, startAya, endSura, endAya)
+
     fun getAllSura(): List<String> = repository.getAllSura()
+
+    fun getAyaCounts(): List<Int> = repository.getAyaCounts()
 
     fun getSuraTranslate(suraNumber: Int): List<String> = repository.getSuraTranslate(suraNumber)
 }

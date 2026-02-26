@@ -1,6 +1,6 @@
 package com.braveboy.mos_haf.di
 
-import com.braveboy.mos_haf.presentation.feature.search.QuranViewModel
+import com.braveboy.mos_haf.presentation.feature.search.KhatmQuranViewModel
 import com.braveboy.mos_haf.data.local.database.AppDatabase
 import com.braveboy.mos_haf.data.local.datasource.LocalDataSource
 import com.braveboy.mos_haf.data.repository.QuranRepository
@@ -30,7 +30,7 @@ val appModule = module {
     singleOf(::GetQuranVersesUseCase)
 
     // ViewModels
-    viewModelOf(::QuranViewModel)
+    viewModelOf(::KhatmQuranViewModel)
     viewModelOf(::SuraListViewModel)
     viewModelOf(::QuranDetailViewModel)
 }

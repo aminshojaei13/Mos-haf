@@ -39,7 +39,7 @@ val Typography = Typography(
         fontFamily = quranTaha,
         fontWeight = FontWeight.Normal,
         fontSize = 28.sp,
-        lineHeight = 32.sp,
+        lineHeight = 40.sp,
         letterSpacing = 0.sp
     ),
     headlineLarge = TextStyle(

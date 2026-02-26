@@ -1,12 +1,9 @@
 package com.braveboy.mos_haf.data.local.datasource
 
-import android.util.Log
-import com.braveboy.mos_haf.data.local.entity.QuranCleanTextEntity
 import com.braveboy.mos_haf.data.local.database.AppDatabase
+import com.braveboy.mos_haf.data.local.entity.QuranCleanTextEntity
 import com.braveboy.mos_haf.data.local.entity.QuranEntity
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.count
 
 class LocalDataSource(private val database: AppDatabase) {
 
@@ -24,13 +21,17 @@ class LocalDataSource(private val database: AppDatabase) {
     fun getVersesBySura(suraNumber: Int): Flow<List<QuranEntity>> =
         database.quranDao().getVersesBySura(suraNumber)
 
-    fun getVersesBySura(suraName: String): List<QuranEntity> {
-        Log.d("xavi2", "getSuraByName: ${database.quranDao().getVersesBySura(suraName)}")
-        return database.quranDao().getVersesBySura(suraName)
-    }
+    fun getVersesBySura(suraName: String): List<QuranEntity> = database.quranDao().getVersesBySura(suraName)
 
     fun getVersesByPage(pageNumber: Int): Flow<List<QuranEntity>> =
         database.quranDao().getVersesByPage(pageNumber)
+
+    fun getVersesByDetailedRange(
+        startSura: Int,
+        startAya: Int,
+        endSura: Int,
+        endAya: Int
+    ): List<QuranEntity> = database.quranDao().getVersesByDetailedRange(startSura, startAya, endSura, endAya)
 
     fun getAllQuranCleanText(): Flow<List<QuranCleanTextEntity>> =
         database.quranDao().getAllQuranCleanText()
@@ -39,9 +40,8 @@ class LocalDataSource(private val database: AppDatabase) {
 
     fun getAllSura(): List<String> = database.quranDao().getAllSura()
 
-    fun getSuraTranslate(suraNumber: Int): List<String> {
-        Log.d("xavi", "saveSssss: ${database.quranDao().getSuraTranslate(suraNumber)}")
-      return database.quranDao().getSuraTranslate(suraNumber)
-    }
+    fun getAyaCounts(): List<Int> = database.quranDao().getAyaCounts()
+
+    fun getSuraTranslate(suraNumber: Int): List<String> = database.quranDao().getSuraTranslate(suraNumber)
 
 }
