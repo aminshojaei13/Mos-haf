@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -46,16 +47,26 @@ fun HomeScreen(navController: NavController) {
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
-                        stringResource(R.string.label_top_app_bar),
-                        style = MaterialTheme.typography.headlineLarge
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.label_top_app_bar),
+                            style = MaterialTheme.typography.headlineLarge
+                        )
+                        Text(
+                            stringResource(R.string.label_top_app_bar2),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+
                     }
                 },
+                /*actions = {
+                    IconButton(onClick = { *//*TODO*//* }) {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    }
+                },*/
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -69,7 +80,7 @@ fun HomeScreen(navController: NavController) {
                 .padding(16.dp)
                 .fillMaxSize()
         ) {
-            LastReadCard()
+            //LastReadCard()
 
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -158,9 +169,11 @@ fun PopularSection(
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             PopularCard(
-                modifier = Modifier.weight(1f).clickable{
-                    onClick(Tile.QURAN)
-                },
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        onClick(Tile.QURAN)
+                    },
                 title = stringResource(R.string.label_quran_tile),
                 imageRes = R.drawable.ic_quran,
             )
@@ -170,20 +183,24 @@ fun PopularSection(
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             PopularCard(
-                modifier = Modifier.weight(1f).clickable{
-                    onClick(Tile.KHATM)
-                },
-                title = stringResource(R.string.label_khatm_quran),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        onClick(Tile.KHATM)
+                    },
+                title = stringResource(R.string.label_search),
                 imageRes = R.drawable.ic_khatm_quran,
             )
 
-            PopularCard(
-                modifier = Modifier.weight(1f).clickable{
-                    onClick(Tile.VOICE)
-                },
+            /*PopularCard(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable {
+                        onClick(Tile.VOICE)
+                    },
                 title = stringResource(R.string.label_quran_voice),
                 imageRes = R.drawable.ic_listening,
-            )
+            )*/
         }
     }
 }
@@ -197,8 +214,14 @@ fun PopularCard(
     Card(
         modifier = modifier.height(180.dp),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
     ) {
+        if (title == "صوتی"){
+            Badge (modifier = Modifier.align(Alignment.CenterHorizontally)){
+                Text("به‌زودی")
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -1,11 +1,17 @@
 <resources>
     <string name="app_name">Mos-haf</string>
-    <string name="label_top_app_bar">مصحف شریف</string>
+    <string name="label_top_app_bar">مصحف </string>
+    <string name="label_top_app_bar2">شریف</string>
     <string name="label_last_read">آخرین خوانش</string>
     <string name="label_continue">ادامه</string>
-    <string name="label_quran_tile">قرآن</string>
+    <string name="label_quran_tile">لیست سوره‌ها</string>
     <string name="label_quran_voice">صوتی</string>
     <string name="label_khatm_quran">ختم قرآن</string>
     <string name="label_bismillah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</string>
     <string name="lebel_khatm_quran">ختم قرآن</string>
+    <string name="label_search">جستجو</string>
+    <string name="label_search_again">جستجو مجدد</string>
+    <string name="label_from_surah">از سوره</string>
+    <string name="label_aya">آیه</string>
+    <string name="label_to_surah">تا سوره</string>
 </resources>

@@ -1,6 +1,6 @@
 package com.braveboy.mos_haf.presentation.feature.search
 
-import androidx.compose.animation.AnimatedVisibility
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,11 +17,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -58,7 +59,7 @@ fun KhatmQuranScreen(navController: NavController) {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        stringResource(R.string.lebel_khatm_quran),
+                        stringResource(R.string.label_search),
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
@@ -92,116 +93,11 @@ fun QuranContent(
     onIntent: (KhatmQuranIntent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var startSuraIndex by remember { mutableStateOf<Int?>(null) }
-    var endSuraIndex by remember { mutableStateOf<Int?>(null) }
-    var startAyaIndex by remember { mutableStateOf<Int?>(0) }
-    var endAyaIndex by remember { mutableStateOf<Int?>(0) }
-    var showSearchBox by remember { mutableStateOf(true) }
-
     Column(
         modifier = modifier.fillMaxSize()
     ) {
-        AnimatedVisibility(showSearchBox) {
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        SuraDropdown(
-                            label = "از سوره",
-                            suraNames = state.suraNames,
-                            selectedSuraIndex = startSuraIndex,
-                            onSuraSelected = {
-                                startSuraIndex = it
-                                startAyaIndex = 0
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        AyaDropdown(
-                            label = "آیه",
-                            ayaCount = startSuraIndex?.let { state.ayaCounts.getOrNull(it) } ?: 0,
-                            selectedAyaIndex = startAyaIndex,
-                            onAyaSelected = { startAyaIndex = it },
-                            modifier = Modifier.weight(0.6f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        SuraDropdown(
-                            label = "تا سوره",
-                            suraNames = state.suraNames,
-                            selectedSuraIndex = endSuraIndex,
-                            onSuraSelected = {
-                                endSuraIndex = it
-                                endAyaIndex = 0
-                            },
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        AyaDropdown(
-                            label = "آیه",
-                            ayaCount = endSuraIndex?.let { state.ayaCounts.getOrNull(it) } ?: 0,
-                            selectedAyaIndex = endAyaIndex,
-                            onAyaSelected = { endAyaIndex = it },
-                            modifier = Modifier.weight(0.6f)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = {
-                            val sSura = startSuraIndex?.plus(1)
-                            val eSura = endSuraIndex?.plus(1)
-                            val sAya = startAyaIndex?.plus(1)
-                            val eAya = endAyaIndex?.plus(1)
-
-                            if (sSura != null && eSura != null && sAya != null && eAya != null) {
-                                onIntent(
-                                    KhatmQuranIntent.LoadVersesByDetailedRange(
-                                        sSura, sAya, eSura, eAya
-                                    )
-                                )
-                            }
-                            showSearchBox = false
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.CenterHorizontally),
-                        enabled = startSuraIndex != null && endSuraIndex != null
-                    ) {
-                        Text("جستجو")
-                    }
-                }
-            }
-        }
-
-        AnimatedVisibility(showSearchBox.not()) {
-            Card(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Button(
-                    modifier = modifier.fillMaxWidth(),
-                    onClick = {
-                        showSearchBox = true
-                    }
-                ) {
-                    Text("جستجو مجدد")
-                }
-            }
+        SearchBox(state) { find ->
+            onIntent(find)
         }
 
         when {
@@ -212,29 +108,177 @@ fun QuranContent(
             )
 
             state.verses.isNotEmpty() -> {
+                Log.d("xavi", "verses loaded ***** ${state.verses}")
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    item {
-                        Text(
-                            text = stringResource(R.string.label_bismillah),
-                            modifier = Modifier.fillMaxWidth(),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                    }
                     itemsIndexed(state.verses) { index, verse ->
+                        if (verse.aya == 1 || index == 0) {
+                            Text(
+                                text = stringResource(R.string.label_bismillah),
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.headlineMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                         if (verse.text.isNotBlank()) {
                             VerseItem(
                                 arabicText = verse.text,
-                                translationText = state.translations[index]
+                                translationText = state.translations[index],
+                                ayaNumber = verse.aya.toString(),
+                                icon = null
                             )
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun SearchBox(
+    state: KhatmQuranState,
+    onClick: (KhatmQuranIntent) -> Unit
+) {
+    var startSuraIndex by remember { mutableStateOf<Int?>(null) }
+    var endSuraIndex by remember { mutableStateOf<Int?>(null) }
+    var startAyaIndex by remember { mutableStateOf<Int?>(0) }
+    var endAyaIndex by remember { mutableStateOf<Int?>(0) }
+    var jozIndex by remember { mutableStateOf<Int?>(null) }
+    var hezbIndex by remember { mutableStateOf<Int?>(null) }
+    var showSearchBox by remember { mutableStateOf(true) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        if (showSearchBox) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SuraDropdown(
+                    label = stringResource(R.string.label_from_surah),
+                    suraNames = state.suraNames,
+                    selectedSuraIndex = startSuraIndex,
+                    onSuraSelected = {
+                        Log.d("xavi", it)
+                        startSuraIndex = state.suraNames.indexOf(it)
+                        startAyaIndex = 0
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+
+                AyaDropdown(
+                    label = stringResource(R.string.label_aya),
+                    ayaCount = startSuraIndex?.let { state.ayaCounts.getOrNull(it) } ?: 0,
+                    selectedAyaIndex = startAyaIndex,
+                    onAyaSelected = { startAyaIndex = it },
+                    modifier = Modifier.weight(0.5f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SuraDropdown(
+                    label = stringResource(R.string.label_to_surah),
+                    suraNames = state.suraNames,
+                    selectedSuraIndex = endSuraIndex,
+                    onSuraSelected = {
+                        Log.d("xavi", it)
+                        endSuraIndex = state.suraNames.indexOf(it)
+                        endAyaIndex = 0
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+
+                AyaDropdown(
+                    label = "آیه",
+                    ayaCount = endSuraIndex?.let { state.ayaCounts.getOrNull(it) } ?: 0,
+                    selectedAyaIndex = endAyaIndex,
+                    onAyaSelected = { endAyaIndex = it },
+                    modifier = Modifier.weight(0.5f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                JozOrHezbDropdown(
+                    label = "جز",
+                    selectedIndex = jozIndex,
+                    onSelected = { jozIndex = it },
+                    modifier = Modifier.weight(1f)
+                )
+
+                JozOrHezbDropdown(
+                    label = "حزب",
+                    selectedIndex = hezbIndex,
+                    onSelected = { hezbIndex = it },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .align(Alignment.CenterHorizontally),
+            shape = MaterialTheme.shapes.small,
+            onClick = {
+                if (showSearchBox) {
+                    val sSura = startSuraIndex?.plus(1)
+                    val eSura = endSuraIndex?.plus(1)
+                    val sAya = startAyaIndex?.plus(1)
+                    val eAya = endAyaIndex?.plus(1)
+                    val joz = jozIndex?.plus(1)
+                    val hezb = hezbIndex?.plus(1)
+
+                    if (sSura != null && eSura != null && sAya != null && eAya != null) {
+                        onClick(
+                            KhatmQuranIntent.LoadVersesByDetailedRange(
+                                sSura, sAya, eSura, eAya
+                            )
+                        )
+                    } else if (joz != null && hezb != null) {
+                        onClick(
+                            KhatmQuranIntent.LoadVersesByJozAndHezb(
+                                joz, hezb
+                            )
+                        )
+                    }
+                    showSearchBox = false
+                } else {
+                    showSearchBox = true
+                }
+            },
+            enabled = startSuraIndex != null && endSuraIndex != null || jozIndex != null
+        ) {
+            Text(
+                text = stringResource(
+                    id = if (showSearchBox) R.string.label_search else R.string.label_search_again
+                ),
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }
@@ -245,18 +289,22 @@ fun SuraDropdown(
     label: String,
     suraNames: List<String>,
     selectedSuraIndex: Int?,
-    onSuraSelected: (Int) -> Unit,
+    onSuraSelected: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val selectedSuraName = selectedSuraIndex?.let { suraNames.getOrNull(it) } ?: ""
+    var selectedSuraName by remember(selectedSuraIndex) {
+        mutableStateOf(
+            selectedSuraIndex?.let { suraNames.getOrNull(it) } ?: ""
+        )
+    }
 
     Box(modifier = modifier) {
         OutlinedTextField(
             value = selectedSuraName,
-            onValueChange = {},
+            onValueChange = { selectedSuraName = it },
             label = { Text(label) },
-            readOnly = true,
+            readOnly = false,
             trailingIcon = {
                 Icon(
                     Icons.Default.ArrowDropDown,
@@ -273,11 +321,11 @@ fun SuraDropdown(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.5f)
         ) {
-            suraNames.forEachIndexed { index, name ->
+            suraNames.map { it.toPersian() }.filter { it.contains(selectedSuraName) }.forEachIndexed { index, name ->
                 DropdownMenuItem(
                     text = { Text(name) },
                     onClick = {
-                        onSuraSelected(index)
+                        onSuraSelected(name)
                         expanded = false
                     }
                 )
@@ -331,3 +379,97 @@ fun AyaDropdown(
         }
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun JozOrHezbDropdown(
+    label: String,
+    selectedIndex: Int?,
+    onSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedLabel = selectedIndex?.let { (it + 1).toString() } ?: ""
+
+    Box(modifier = modifier) {
+        OutlinedTextField(
+            value = selectedLabel,
+            onValueChange = {},
+            label = { Text(label) },
+            readOnly = true,
+            trailingIcon = {
+                Icon(
+                    Icons.Default.ArrowDropDown,
+                    contentDescription = null,
+                    Modifier.clickable { expanded = !expanded }
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { expanded = !expanded }
+        )
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            val count = if (label == "جز") 30 else 4
+            repeat(count) { index ->
+                DropdownMenuItem(
+                    text = { Text((index + 1).toString()) },
+                    onClick = {
+                        onSelected(index)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+fun String.toPersian(): String {
+    val arabicToPersianMap = mapOf(
+        'ا' to 'ا',
+        'إ' to 'ا',
+        'أ' to 'ا',
+        'ب' to 'ب',
+        'پ' to 'پ',
+        'ت' to 'ت',
+        'ث' to 'ث',
+        'ج' to 'ج',
+        'چ' to 'چ',
+        'ح' to 'ح',
+        'خ' to 'خ',
+        'د' to 'د',
+        'ذ' to 'ذ',
+        'ر' to 'ر',
+        'ز' to 'ز',
+        'ژ' to 'ژ',
+        'س' to 'س',
+        'ش' to 'ش',
+        'ص' to 'ص',
+        'ض' to 'ض',
+        'ط' to 'ط',
+        'ظ' to 'ظ',
+        'ع' to 'ع',
+        'غ' to 'غ',
+        'ف' to 'ف',
+        'ق' to 'ق',
+        'ک' to 'ک',
+        'گ' to 'گ',
+        'ل' to 'ل',
+        'م' to 'م',
+        'ن' to 'ن',
+        'و' to 'و',
+        'ه' to 'ه',
+        'ي' to 'ی',
+        'ؤ' to 'ؤ',
+        'ئ' to 'ئ',
+        'ى' to 'ی',
+        'ك' to 'ک'
+    )
+
+    return arabicToPersianMap.entries.fold(this) { acc, (ar, fa) ->
+        acc.replace(ar,fa)
+    }
+}
+

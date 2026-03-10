@@ -8,6 +8,11 @@ sealed class KhatmQuranIntent {
         val endAya: Int
     ) : KhatmQuranIntent()
 
+    data class LoadVersesByJozAndHezb(
+        val joz: Int,
+        val hezb: Int,
+    ) : KhatmQuranIntent()
+
     object LoadSuraNames : KhatmQuranIntent()
     object RefreshData : KhatmQuranIntent()
 }

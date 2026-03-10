@@ -65,6 +65,14 @@ class QuranRepository(private val localDataSource: LocalDataSource) {
     fun getByTranslateRange(startSura: Int, startAya: Int, endSura: Int, endAya: Int): List<String> =
         localDataSource.getByTranslateRange(startSura,startAya,endSura,endAya)
 
+    fun getByJozAndHezb(
+        joz: Int,
+        hezb: Int,
+    ): List<Quran> =
+        localDataSource.getByJozAndHezb(joz,hezb).map {
+            it.toDomain()
+        }
+
     private fun QuranEntity.toDomain(): Quran = Quran(
         id = id,
         sura = sura,

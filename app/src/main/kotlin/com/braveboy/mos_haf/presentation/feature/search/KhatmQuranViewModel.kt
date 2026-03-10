@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+val PERSIAN_CHARACTERS = "^[\\s- ٔآابّپتثجچحخدذرزژسشصضطظعغفقکگلمنوهیئءؤةأيك]+$".toRegex()
+
 class KhatmQuranViewModel(
     private val getQuranVersesUseCase: GetQuranVersesUseCase
 ) : ViewModel() {
@@ -33,6 +35,13 @@ class KhatmQuranViewModel(
                 }
             }
 
+            is KhatmQuranIntent.LoadVersesByJozAndHezb -> {
+                loadVersesByJozAndHezb(
+                    intent.joz,
+                    intent.hezb
+                )
+            }
+
             is KhatmQuranIntent.LoadSuraNames -> loadInitialData()
             is KhatmQuranIntent.RefreshData -> loadInitialData()
         }
@@ -48,9 +57,22 @@ class KhatmQuranViewModel(
             _state.update { it.copy(isLoading = true, error = null) }
 
             try {
-                val verses = getQuranVersesUseCase.byDetailedRange(startSura, startAya, endSura, endAya)
-                val translates = getQuranVersesUseCase.getByTranslateRange(startSura, startAya, endSura, endAya)
+                var verses =
+                    getQuranVersesUseCase.byDetailedRange(startSura, startAya, endSura, endAya)
+                val translates =
+                    getQuranVersesUseCase.getByTranslateRange(startSura, startAya, endSura, endAya)
 
+                if (verses.isNotEmpty()) {
+                    val bismillahPattern = Regex(
+                        "بِسْمِ\\s*اللَّهِ\\s*الرَّحْمَـٰنِ\\s*الرَّحِيمِ"
+                    )
+
+                    verses = verses.map { verse ->
+                        verse.copy(
+                            text = verse.text.replace(bismillahPattern, "").trim()
+                        )
+                    }
+                }
                 _state.update {
                     it.copy(
                         isLoading = false,
@@ -58,7 +80,50 @@ class KhatmQuranViewModel(
                         translations = translates
                     )
                 }
-            }catch (e: Exception) {
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Error loading verse or translate") }
+            }
+        }
+
+    }
+
+    private fun loadVersesByJozAndHezb(
+        joz: Int,
+        hezb: Int,
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(isLoading = true, error = null) }
+
+            try {
+                var verses = getQuranVersesUseCase.byJozAndHezb(joz, (((joz-1) * 4) + hezb))
+                var translates = emptyList<String>()
+
+                if (verses.isNotEmpty()) {
+                    val bismillahPattern = Regex(
+                        "بِسْمِ\\s*اللَّهِ\\s*الرَّحْمَـٰنِ\\s*الرَّحِيمِ"
+                    )
+
+                    verses = verses.map { verse ->
+                        verse.copy(
+                            text = verse.text.replace(bismillahPattern, "").trim()
+                        )
+                    }
+
+                    translates = getQuranVersesUseCase.getByTranslateRange(
+                        startSura = verses.first().sura,
+                        startAya = verses.first().aya,
+                        endSura = verses.last().sura,
+                        endAya = verses.last().aya
+                    )
+                }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        verses = verses,
+                        translations = translates
+                    )
+                }
+            } catch (e: Exception) {
                 _state.update { it.copy(error = e.message ?: "Error loading verse or translate") }
             }
         }
@@ -70,8 +135,13 @@ class KhatmQuranViewModel(
             try {
                 val suraNames = getQuranVersesUseCase.getAllSura()
                 val ayaCounts = getQuranVersesUseCase.getAyaCounts()
-                _state.update {
-                    it.copy(
+                _state.update { quranState ->
+                    suraNames.forEach { sura ->
+                        sura.filter {
+                            PERSIAN_CHARACTERS.matches(it.toString())
+                        }
+                    }
+                    quranState.copy(
                         suraNames = suraNames,
                         ayaCounts = ayaCounts
                     )

@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.braveboy.mos_haf.data.local.entity.QuranCleanTextEntity
 import com.braveboy.mos_haf.data.local.entity.QuranEntity
+import com.braveboy.mos_haf.domain.model.Quran
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -60,4 +61,13 @@ interface QuranDao {
     """)
     fun getByTranslateRange(startSura: Int, startAya: Int, endSura: Int, endAya: Int): List<String>
 
+    @Query("""
+        SELECT * FROM quran_text 
+        WHERE juz = :joz AND hezb = :hezb
+        ORDER BY `index`
+    """)
+    fun getByJozAndHezb(
+        joz: Int,
+        hezb: Int,
+    ): List<QuranEntity>
 }

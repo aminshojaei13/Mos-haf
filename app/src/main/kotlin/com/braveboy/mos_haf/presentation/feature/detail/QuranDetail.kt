@@ -1,13 +1,17 @@
 package com.braveboy.mos_haf.presentation.feature.detail
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -28,7 +32,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -90,14 +96,16 @@ fun QuranDetailScreen(
                         text = stringResource(R.string.label_bismillah),
                         modifier = Modifier.fillMaxWidth(),
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.headlineMedium
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 itemsIndexed(state.verses) { index, verse ->
-                    if (verse.text.isNotBlank()){
+                    if (verse.text.isNotBlank()) {
                         VerseItem(
                             arabicText = verse.text,
-                            translationText = state.translations.getOrNull(index) ?: ""
+                            translationText = state.translations.getOrNull(index) ?: "",
+                            ayaNumber = "(${index + 1})"
                         )
                     }
                 }
@@ -107,26 +115,47 @@ fun QuranDetailScreen(
 }
 
 @Composable
-fun VerseItem(arabicText: String, translationText: String) {
+fun VerseItem(
+    arabicText: String,
+    translationText: String,
+    ayaNumber: String,
+    icon: Int? = null
+) {
     var isExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 16.dp)
-            .clickable { isExpanded = !isExpanded }
             .animateContentSize()
     ) {
-        Text(
-            text = arabicText,
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground
-        )
+        Box {
+            Row(verticalAlignment = Alignment.Top) {
+                icon?.let {
+                    Image(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .padding(top = 32.dp),
+                        painter = painterResource(id = it), contentDescription = null
+                    )
+                }
+
+                Text(
+                    text = "$arabicText (${ayaNumber.convertToPersian()})",
+                    modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             text = translationText,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isExpanded = !isExpanded },
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             maxLines = if (isExpanded) Int.MAX_VALUE else 1,
@@ -143,4 +172,22 @@ fun QuranDetailScreenPreview() {
             navController = rememberNavController()
         )
     }
+}
+
+fun String.convertToPersian(): String {
+    val tr = mapOf(
+        "0" to "۰",
+        "1" to "۱",
+        "2" to "۲",
+        "3" to "۳",
+        "4" to "۴",
+        "5" to "۵",
+        "6" to "۶",
+        "7" to "۷",
+        "8" to "۸",
+        "9" to "۹"
+    )
+   return tr.entries.fold(this) { acc, (en,fa) ->
+       acc.replace(en,fa)
+   }
 }
