@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Mos-haf</string>
+    <string name="app_name">مصحف</string>
     <string name="label_top_app_bar">مصحف </string>
     <string name="label_top_app_bar2">شریف</string>
     <string name="label_last_read">آخرین خوانش</string>
@@ -14,4 +14,6 @@
     <string name="label_from_surah">از سوره</string>
     <string name="label_aya">آیه</string>
     <string name="label_to_surah">تا سوره</string>
+    <string name="label_font_size">سایز قلم</string>
+    <string name="label_suras_list">لیست سوره‌ها</string>
 </resources>

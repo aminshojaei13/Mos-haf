@@ -2,11 +2,9 @@ package com.braveboy.mos_haf.presentation.feature.suralist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -24,13 +22,16 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
+import ir.partsoftware.cup.common.compose.modifiers.safeClickable
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,7 +43,12 @@ fun SuraListScreen(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("لیست سوره‌ها", style = MaterialTheme.typography.titleLarge) },
+                title = {
+                    Text(
+                        stringResource(R.string.label_suras_list),
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -74,7 +80,7 @@ fun SuraListScreen(navController: NavController) {
                             shape = MaterialTheme.shapes.large
                         )
                         .background(Color.Transparent)
-                        .clickable {
+                        .safeClickable {
                             navController.navigate(QuranDetail(state.value[it]))
                         },
                 ) {

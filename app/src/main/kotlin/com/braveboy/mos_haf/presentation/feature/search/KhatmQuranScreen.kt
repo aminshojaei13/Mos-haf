@@ -1,7 +1,7 @@
 package com.braveboy.mos_haf.presentation.feature.search
 
+import android.annotation.SuppressLint
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -28,9 +31,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,13 +45,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.components.ErrorView
 import com.braveboy.mos_haf.components.LoadingIndicator
+import com.braveboy.mos_haf.domain.model.Quran
 import com.braveboy.mos_haf.presentation.feature.detail.VerseItem
+import com.braveboy.mos_haf.presentation.feature.detail.toArabicWord
+import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
+import com.braveboy.mos_haf.presentation.feature.detail.toPersianWord
+import ir.partsoftware.cup.common.compose.modifiers.safeClickable
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,7 +107,9 @@ fun QuranContent(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         SearchBox(state) { find ->
             onIntent(find)
@@ -108,32 +123,12 @@ fun QuranContent(
             )
 
             state.verses.isNotEmpty() -> {
-                Log.d("xavi", "verses loaded ***** ${state.verses}")
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    itemsIndexed(state.verses) { index, verse ->
-                        if (verse.aya == 1 || index == 0) {
-                            Text(
-                                text = stringResource(R.string.label_bismillah),
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center,
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                        if (verse.text.isNotBlank()) {
-                            VerseItem(
-                                arabicText = verse.text,
-                                translationText = state.translations[index],
-                                ayaNumber = verse.aya.toString(),
-                                icon = null
-                            )
-                        }
-                    }
-                }
+                AyatComponent(
+                    modifier = Modifier.weight(1f),
+                    verses = state.verses,
+                    translations = state.translations,
+                    fontSize = 14.sp
+                )
             }
         }
     }
@@ -146,8 +141,8 @@ fun SearchBox(
 ) {
     var startSuraIndex by remember { mutableStateOf<Int?>(null) }
     var endSuraIndex by remember { mutableStateOf<Int?>(null) }
-    var startAyaIndex by remember { mutableStateOf<Int?>(0) }
-    var endAyaIndex by remember { mutableStateOf<Int?>(0) }
+    var startAyaIndex by remember { mutableStateOf<Int?>(null) }
+    var endAyaIndex by remember { mutableStateOf<Int?>(null) }
     var jozIndex by remember { mutableStateOf<Int?>(null) }
     var hezbIndex by remember { mutableStateOf<Int?>(null) }
     var showSearchBox by remember { mutableStateOf(true) }
@@ -166,9 +161,13 @@ fun SearchBox(
                     label = stringResource(R.string.label_from_surah),
                     suraNames = state.suraNames,
                     selectedSuraIndex = startSuraIndex,
-                    onSuraSelected = {
-                        Log.d("xavi", it)
-                        startSuraIndex = state.suraNames.indexOf(it)
+                    onSuraSelected = { sura ->
+                        Log.d(
+                            "xavi",
+                            sura.toArabicWord() + "---" + state.suraNames.map { it.toPersianWord() }
+                                .indexOf(sura)
+                        ).toString()
+                        startSuraIndex = state.suraNames.map { it.toPersianWord() }.indexOf(sura)
                         startAyaIndex = 0
                     },
                     modifier = Modifier.weight(1f)
@@ -193,9 +192,9 @@ fun SearchBox(
                     label = stringResource(R.string.label_to_surah),
                     suraNames = state.suraNames,
                     selectedSuraIndex = endSuraIndex,
-                    onSuraSelected = {
-                        Log.d("xavi", it)
-                        endSuraIndex = state.suraNames.indexOf(it)
+                    onSuraSelected = { sura ->
+                        Log.d("xavi", sura)
+                        endSuraIndex = state.suraNames.map { it.toPersianWord() }.indexOf(sura)
                         endAyaIndex = 0
                     },
                     modifier = Modifier.weight(1f)
@@ -259,19 +258,25 @@ fun SearchBox(
                                 sSura, sAya, eSura, eAya
                             )
                         )
+                        startSuraIndex = null
+                        endSuraIndex = null
+                        startAyaIndex = null
+                        endAyaIndex = null
                     } else if (joz != null && hezb != null) {
                         onClick(
                             KhatmQuranIntent.LoadVersesByJozAndHezb(
                                 joz, hezb
                             )
                         )
+                        jozIndex = null
+                        hezbIndex = null
                     }
                     showSearchBox = false
                 } else {
                     showSearchBox = true
                 }
             },
-            enabled = startSuraIndex != null && endSuraIndex != null || jozIndex != null
+            enabled = startSuraIndex != null && endSuraIndex != null || jozIndex != null || !showSearchBox
         ) {
             Text(
                 text = stringResource(
@@ -279,6 +284,66 @@ fun SearchBox(
                 ),
                 style = MaterialTheme.typography.bodyLarge
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("FrequentlyChangingValue")
+@Composable
+fun AyatComponent(
+    modifier: Modifier = Modifier,
+    verses: List<Quran>,
+    translations: List<String>,
+    fontSize: TextUnit
+) {
+    LazyColumn(
+        modifier = Modifier
+            .padding(16.dp)
+            .then(modifier),
+    ) {
+        itemsIndexed(verses) { index, verse ->
+            if (verse.aya == 1 || index == 0) {
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.Bottom
+                ) {
+                    Text(
+                        text = verse.suraName.orEmpty(),
+                        modifier = Modifier.weight(.3f),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+
+                    if (verse.suraName != "التوبة") {
+                        Text(
+                            text = stringResource(R.string.label_bismillah),
+                            modifier = Modifier.weight(1f),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    Text(
+                        text = "جز " + verses.first().juz.toString().toPersianNumber(),
+                        modifier = Modifier.weight(.3f),
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
+            if (verse.text.isNotBlank()) {
+                VerseItem(
+                    arabicText = verse.text,
+                    translationText = translations[index],
+                    ayaNumber = verse.aya.toString(),
+                    fontSize = fontSize,
+                    icon = null,
+                )
+            }
         }
     }
 }
@@ -309,27 +374,28 @@ fun SuraDropdown(
                 Icon(
                     Icons.Default.ArrowDropDown,
                     contentDescription = null,
-                    Modifier.clickable { expanded = !expanded }
+                    Modifier.safeClickable { expanded = !expanded }
                 )
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .safeClickable { expanded = !expanded }
         )
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.5f)
         ) {
-            suraNames.map { it.toPersian() }.filter { it.contains(selectedSuraName) }.forEachIndexed { index, name ->
-                DropdownMenuItem(
-                    text = { Text(name) },
-                    onClick = {
-                        onSuraSelected(name)
-                        expanded = false
-                    }
-                )
-            }
+            suraNames.map { it.toPersianWord() }.filter { it.contains(selectedSuraName) }
+                .forEachIndexed { _, name ->
+                    DropdownMenuItem(
+                        text = { Text(name) },
+                        onClick = {
+                            onSuraSelected(name)
+                            expanded = false
+                        }
+                    )
+                }
         }
     }
 }
@@ -356,12 +422,12 @@ fun AyaDropdown(
                 Icon(
                     Icons.Default.ArrowDropDown,
                     contentDescription = null,
-                    Modifier.clickable { expanded = !expanded }
+                    Modifier.safeClickable { expanded = !expanded }
                 )
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .safeClickable { expanded = !expanded }
         )
         DropdownMenu(
             expanded = expanded,
@@ -401,12 +467,12 @@ fun JozOrHezbDropdown(
                 Icon(
                     Icons.Default.ArrowDropDown,
                     contentDescription = null,
-                    Modifier.clickable { expanded = !expanded }
+                    Modifier.safeClickable { expanded = !expanded }
                 )
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .safeClickable { expanded = !expanded }
         )
         DropdownMenu(
             expanded = expanded,
@@ -423,53 +489,6 @@ fun JozOrHezbDropdown(
                 )
             }
         }
-    }
-}
-
-fun String.toPersian(): String {
-    val arabicToPersianMap = mapOf(
-        'ا' to 'ا',
-        'إ' to 'ا',
-        'أ' to 'ا',
-        'ب' to 'ب',
-        'پ' to 'پ',
-        'ت' to 'ت',
-        'ث' to 'ث',
-        'ج' to 'ج',
-        'چ' to 'چ',
-        'ح' to 'ح',
-        'خ' to 'خ',
-        'د' to 'د',
-        'ذ' to 'ذ',
-        'ر' to 'ر',
-        'ز' to 'ز',
-        'ژ' to 'ژ',
-        'س' to 'س',
-        'ش' to 'ش',
-        'ص' to 'ص',
-        'ض' to 'ض',
-        'ط' to 'ط',
-        'ظ' to 'ظ',
-        'ع' to 'ع',
-        'غ' to 'غ',
-        'ف' to 'ف',
-        'ق' to 'ق',
-        'ک' to 'ک',
-        'گ' to 'گ',
-        'ل' to 'ل',
-        'م' to 'م',
-        'ن' to 'ن',
-        'و' to 'و',
-        'ه' to 'ه',
-        'ي' to 'ی',
-        'ؤ' to 'ؤ',
-        'ئ' to 'ئ',
-        'ى' to 'ی',
-        'ك' to 'ک'
-    )
-
-    return arabicToPersianMap.entries.fold(this) { acc, (ar, fa) ->
-        acc.replace(ar,fa)
     }
 }
 

@@ -1,8 +1,8 @@
 package com.braveboy.mos_haf.presentation.feature.home
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,17 +12,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,15 +31,24 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.braveboy.mos_haf.BuildConfig
 import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.presentation.navigation.Screen
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
+import ir.partsoftware.cup.common.compose.modifiers.safeClickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,11 +84,14 @@ fun HomeScreen(navController: NavController) {
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
+        val uriHandler = LocalUriHandler.current
+
         Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .padding(16.dp)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
         ) {
             //LastReadCard()
 
@@ -89,15 +102,81 @@ fun HomeScreen(navController: NavController) {
                     Tile.QURAN -> {
                         navController.navigate(Screen.SuraList.route)
                     }
+
                     Tile.KHATM -> {
                         navController.navigate(Screen.Search.route)
                     }
+
                     Tile.VOICE -> {
 
                     }
                 }
 
             }
+
+            Spacer(modifier = Modifier.weight(1F))
+
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = "نسخه : " + BuildConfig.VERSION_NAME,
+                textAlign = TextAlign.Center
+            )
+
+            val annotatedText = buildAnnotatedString {
+                withStyle(
+                    style = SpanStyle(
+                        color = Color.Gray,
+                    )
+                ) {
+                    append(
+                        text = "متن و ترجمه قرآن، با استفاده از دیتابیس سایت ",
+                    )
+                }
+
+                pushStringAnnotation(
+                    tag = "URL",
+                    annotation = "https://www.striing.ir/file/4:quran-database"
+                )
+                withStyle(
+                    style = SpanStyle(
+                        color = Color(0xFF1E88E5), // رنگ آبی
+                        textDecoration = TextDecoration.Underline
+                    )
+                ) {
+                    append("ریسمان")
+                }
+                pop()
+
+                withStyle(
+                    style = SpanStyle(
+                        color = Color.Gray,
+                    )
+                ) {
+                    append(" می‌باشد.")
+                }
+            }
+
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ClickableText(
+                    modifier = Modifier.align(Alignment.Center),
+                    text = annotatedText,
+                    style = MaterialTheme.typography.bodySmall,
+                    onClick = { offset ->
+                        annotatedText.getStringAnnotations(
+                            tag = "URL",
+                            start = offset,
+                            end = offset
+                        )
+                            .firstOrNull()?.let { annotation ->
+                                uriHandler.openUri(annotation.item)
+                            }
+                    }
+                )
+            }
+
+
         }
     }
 }
@@ -107,7 +186,11 @@ fun LastReadCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f))
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary.copy(
+                alpha = 0.8f
+            )
+        )
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
@@ -164,14 +247,14 @@ fun LastReadCard() {
 
 @Composable
 fun PopularSection(
-    onClick : (Tile) -> Unit
+    onClick: (Tile) -> Unit
 ) {
     Column {
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             PopularCard(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable {
+                    .safeClickable {
                         onClick(Tile.QURAN)
                     },
                 title = stringResource(R.string.label_quran_tile),
@@ -185,7 +268,7 @@ fun PopularSection(
             PopularCard(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable {
+                    .safeClickable {
                         onClick(Tile.KHATM)
                     },
                 title = stringResource(R.string.label_search),
@@ -195,11 +278,11 @@ fun PopularSection(
             /*PopularCard(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable {
+                    .safecli {
                         onClick(Tile.VOICE)
                     },
                 title = stringResource(R.string.label_quran_voice),
-                imageRes = R.drawable.ic_listening,
+                imageRes = R.drawable.ic_listening
             )*/
         }
     }
@@ -216,8 +299,8 @@ fun PopularCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
     ) {
-        if (title == "صوتی"){
-            Badge (modifier = Modifier.align(Alignment.CenterHorizontally)){
+        if (title == "صوتی") {
+            Badge(modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 Text("به‌زودی")
             }
         }

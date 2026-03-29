@@ -1,6 +1,5 @@
 package com.braveboy.mos_haf.domain.usecase
 
-import com.braveboy.mos_haf.data.local.entity.QuranEntity
 import com.braveboy.mos_haf.data.repository.QuranRepository
 import com.braveboy.mos_haf.domain.model.Quran
 import kotlinx.coroutines.flow.Flow
