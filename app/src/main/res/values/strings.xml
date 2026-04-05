@@ -16,4 +16,5 @@
     <string name="label_to_surah">تا سوره</string>
     <string name="label_font_size">سایز قلم</string>
     <string name="label_suras_list">لیست سوره‌ها</string>
+    <string name="label_sura">سوره‌</string>
 </resources>

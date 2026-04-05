@@ -4,6 +4,7 @@ import com.braveboy.mos_haf.domain.model.Quran
 
 data class QuranDetailState(
     val verses: List<Quran> = emptyList(),
+    val suraNames: List<String> = emptyList(),
     val translations: List<String> = emptyList(),
     val suraName: String = "",
     val isLoading: Boolean = true

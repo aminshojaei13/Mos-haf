@@ -23,8 +23,8 @@ class SuraListViewModel(
     }
 
     private fun getAllSura() {
-        getQuranVersesUseCase.getAllSura().let { verses ->
-            _state.update { verses }
+        getQuranVersesUseCase.getAllSura().let { suras ->
+            _state.update { suras }
         }
     }
 }

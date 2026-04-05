@@ -13,6 +13,10 @@ sealed class KhatmQuranIntent {
         val hezb: Int,
     ) : KhatmQuranIntent()
 
+    data class LoadVersesBySura(
+        val sura: Int,
+    ) : KhatmQuranIntent()
+
     object LoadSuraNames : KhatmQuranIntent()
     object RefreshData : KhatmQuranIntent()
 }

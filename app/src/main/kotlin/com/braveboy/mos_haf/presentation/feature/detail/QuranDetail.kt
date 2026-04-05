@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.R
-import com.braveboy.mos_haf.presentation.feature.search.AyatComponent
+import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import ir.partsoftware.cup.common.compose.modifiers.safeClickable
 import org.koin.androidx.compose.koinViewModel
@@ -135,7 +135,13 @@ fun QuranDetailScreen(
                 modifier = Modifier.padding(paddingValues),
                 verses = state.verses,
                 translations = state.translations,
-                fontSize = fontSize
+                fontSize = fontSize,
+                suras = state.suraNames,
+                changeSura = {
+                    viewModel.loadVersesAndTranslations(
+                        it
+                    )
+                }
             )
         }
     }

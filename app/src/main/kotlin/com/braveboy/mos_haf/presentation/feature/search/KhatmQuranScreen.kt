@@ -1,7 +1,8 @@
 package com.braveboy.mos_haf.presentation.feature.search
 
-import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,14 +12,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DividerDefaults
@@ -29,23 +30,22 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,10 +53,7 @@ import androidx.navigation.NavController
 import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.components.ErrorView
 import com.braveboy.mos_haf.components.LoadingIndicator
-import com.braveboy.mos_haf.domain.model.Quran
-import com.braveboy.mos_haf.presentation.feature.detail.VerseItem
-import com.braveboy.mos_haf.presentation.feature.detail.toArabicWord
-import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
+import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianWord
 import ir.partsoftware.cup.common.compose.modifiers.safeClickable
 import org.koin.androidx.compose.koinViewModel
@@ -127,7 +124,8 @@ fun QuranContent(
                     modifier = Modifier.weight(1f),
                     verses = state.verses,
                     translations = state.translations,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    changeSura = {}
                 )
             }
         }
@@ -139,6 +137,7 @@ fun SearchBox(
     state: KhatmQuranState,
     onClick: (KhatmQuranIntent) -> Unit
 ) {
+    var suraIndex by remember { mutableStateOf<Int?>(null) }
     var startSuraIndex by remember { mutableStateOf<Int?>(null) }
     var endSuraIndex by remember { mutableStateOf<Int?>(null) }
     var startAyaIndex by remember { mutableStateOf<Int?>(null) }
@@ -153,6 +152,113 @@ fun SearchBox(
             .padding(horizontal = 16.dp)
     ) {
         if (showSearchBox) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                SuraDropdown(
+                    modifier = Modifier.weight(1f),
+                    label = stringResource(R.string.label_sura),
+                    suraNames = state.suraNames,
+                    selectedSuraIndex = suraIndex,
+                    onSuraSelected = { sura ->
+                        suraIndex = state.suraNames.map { it.toPersianWord() }.indexOf(sura)
+                    },
+                )
+
+                Spacer(Modifier.width(4.dp))
+
+                OutlinedIconButton(
+                    modifier = Modifier.size(56.dp),
+                    shape = MaterialTheme.shapes.small,
+                    enabled = suraIndex != null,
+                    onClick = {
+                        var sura = suraIndex
+                        if (sura != null) {
+                            onClick(
+                                KhatmQuranIntent.LoadVersesBySura(sura)
+                            )
+                            suraIndex = null
+                        }
+                        showSearchBox = false
+                    },
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                JozOrHezbDropdown(
+                    modifier = Modifier.weight(1f),
+                    label = "جز",
+                    selectedIndex = jozIndex,
+                    onSelected = { jozIndex = it }
+                )
+
+                JozOrHezbDropdown(
+                    label = "حزب",
+                    selectedIndex = hezbIndex,
+                    onSelected = { hezbIndex = it },
+                    modifier = Modifier.weight(1f)
+                )
+
+                OutlinedIconButton(
+                    modifier = Modifier.size(56.dp),
+                    shape = MaterialTheme.shapes.small,
+                    enabled = hezbIndex != null && jozIndex != null,
+                    onClick = {
+                        val joz = jozIndex?.plus(1)
+                        val hezb = hezbIndex?.plus(1)
+
+                        if (joz != null && hezb != null) {
+                            onClick(
+                                KhatmQuranIntent.LoadVersesByJozAndHezb(
+                                    joz, hezb
+                                )
+                            )
+                            jozIndex = null
+                            hezbIndex = null
+                        }
+                        showSearchBox = false
+                    },
+                    border = BorderStroke(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -162,11 +268,6 @@ fun SearchBox(
                     suraNames = state.suraNames,
                     selectedSuraIndex = startSuraIndex,
                     onSuraSelected = { sura ->
-                        Log.d(
-                            "xavi",
-                            sura.toArabicWord() + "---" + state.suraNames.map { it.toPersianWord() }
-                                .indexOf(sura)
-                        ).toString()
                         startSuraIndex = state.suraNames.map { it.toPersianWord() }.indexOf(sura)
                         startAyaIndex = 0
                     },
@@ -208,31 +309,6 @@ fun SearchBox(
                     modifier = Modifier.weight(0.5f)
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                JozOrHezbDropdown(
-                    label = "جز",
-                    selectedIndex = jozIndex,
-                    onSelected = { jozIndex = it },
-                    modifier = Modifier.weight(1f)
-                )
-
-                JozOrHezbDropdown(
-                    label = "حزب",
-                    selectedIndex = hezbIndex,
-                    onSelected = { hezbIndex = it },
-                    modifier = Modifier.weight(1f)
-                )
-            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -249,8 +325,6 @@ fun SearchBox(
                     val eSura = endSuraIndex?.plus(1)
                     val sAya = startAyaIndex?.plus(1)
                     val eAya = endAyaIndex?.plus(1)
-                    val joz = jozIndex?.plus(1)
-                    val hezb = hezbIndex?.plus(1)
 
                     if (sSura != null && eSura != null && sAya != null && eAya != null) {
                         onClick(
@@ -262,86 +336,30 @@ fun SearchBox(
                         endSuraIndex = null
                         startAyaIndex = null
                         endAyaIndex = null
-                    } else if (joz != null && hezb != null) {
-                        onClick(
-                            KhatmQuranIntent.LoadVersesByJozAndHezb(
-                                joz, hezb
-                            )
-                        )
-                        jozIndex = null
-                        hezbIndex = null
                     }
                     showSearchBox = false
                 } else {
                     showSearchBox = true
                 }
             },
-            enabled = startSuraIndex != null && endSuraIndex != null || jozIndex != null || !showSearchBox
+            enabled = startSuraIndex != null && endSuraIndex != null || !showSearchBox
         ) {
-            Text(
-                text = stringResource(
-                    id = if (showSearchBox) R.string.label_search else R.string.label_search_again
-                ),
-                style = MaterialTheme.typography.bodyLarge
-            )
-        }
-    }
-}
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(
+                        id = if (showSearchBox) R.string.label_search else R.string.label_search_again
+                    ),
+                    style = MaterialTheme.typography.bodyLarge
+                )
 
-@OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("FrequentlyChangingValue")
-@Composable
-fun AyatComponent(
-    modifier: Modifier = Modifier,
-    verses: List<Quran>,
-    translations: List<String>,
-    fontSize: TextUnit
-) {
-    LazyColumn(
-        modifier = Modifier
-            .padding(16.dp)
-            .then(modifier),
-    ) {
-        itemsIndexed(verses) { index, verse ->
-            if (verse.aya == 1 || index == 0) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    Text(
-                        text = verse.suraName.orEmpty(),
-                        modifier = Modifier.weight(.3f),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                Spacer(Modifier.width(8.dp))
 
-                    if (verse.suraName != "التوبة") {
-                        Text(
-                            text = stringResource(R.string.label_bismillah),
-                            modifier = Modifier.weight(1f),
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.headlineMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Text(
-                        text = "جز " + verses.first().juz.toString().toPersianNumber(),
-                        modifier = Modifier.weight(.3f),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                }
-            }
-            if (verse.text.isNotBlank()) {
-                VerseItem(
-                    arabicText = verse.text,
-                    translationText = translations[index],
-                    ayaNumber = verse.aya.toString(),
-                    fontSize = fontSize,
-                    icon = null,
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = null
                 )
             }
         }
@@ -365,7 +383,7 @@ fun SuraDropdown(
     }
 
     Box(modifier = modifier) {
-        OutlinedTextField(
+        TextField(
             value = selectedSuraName,
             onValueChange = { selectedSuraName = it },
             label = { Text(label) },
@@ -378,8 +396,20 @@ fun SuraDropdown(
                 )
             },
             modifier = Modifier
-                .fillMaxWidth()
-                .safeClickable { expanded = !expanded }
+                .clip(MaterialTheme.shapes.small)
+                .border(
+                    color = MaterialTheme.colorScheme.primary,
+                    width = 1.dp,
+                    shape = MaterialTheme.shapes.small
+                )
+                .safeClickable { expanded = !expanded },
+            colors = TextFieldDefaults.colors().copy(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
+            )
         )
         DropdownMenu(
             expanded = expanded,
@@ -413,7 +443,7 @@ fun AyaDropdown(
     val selectedAyaLabel = selectedAyaIndex?.let { (it + 1).toString() } ?: ""
 
     Box(modifier = modifier) {
-        OutlinedTextField(
+        TextField(
             value = selectedAyaLabel,
             onValueChange = {},
             label = { Text(label) },
@@ -426,8 +456,20 @@ fun AyaDropdown(
                 )
             },
             modifier = Modifier
-                .fillMaxWidth()
-                .safeClickable { expanded = !expanded }
+                .clip(MaterialTheme.shapes.small)
+                .border(
+                    color = MaterialTheme.colorScheme.primary,
+                    width = 1.dp,
+                    shape = MaterialTheme.shapes.small
+                )
+                .safeClickable { expanded = !expanded },
+            colors = TextFieldDefaults.colors().copy(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
+            )
         )
         DropdownMenu(
             expanded = expanded,
@@ -458,7 +500,7 @@ fun JozOrHezbDropdown(
     val selectedLabel = selectedIndex?.let { (it + 1).toString() } ?: ""
 
     Box(modifier = modifier) {
-        OutlinedTextField(
+        TextField(
             value = selectedLabel,
             onValueChange = {},
             label = { Text(label) },
@@ -471,8 +513,20 @@ fun JozOrHezbDropdown(
                 )
             },
             modifier = Modifier
-                .fillMaxWidth()
-                .safeClickable { expanded = !expanded }
+                .clip(MaterialTheme.shapes.small)
+                .border(
+                    color = MaterialTheme.colorScheme.primary,
+                    width = 1.dp,
+                    shape = MaterialTheme.shapes.small
+                )
+                .safeClickable { expanded = !expanded },
+            colors = TextFieldDefaults.colors().copy(
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent,
+                unfocusedContainerColor = Color.Transparent
+            )
         )
         DropdownMenu(
             expanded = expanded,

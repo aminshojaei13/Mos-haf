@@ -42,6 +42,10 @@ class KhatmQuranViewModel(
                 )
             }
 
+            is KhatmQuranIntent.LoadVersesBySura -> {
+                loadVersesBySura(intent.sura)
+            }
+
             is KhatmQuranIntent.LoadSuraNames -> loadInitialData()
             is KhatmQuranIntent.RefreshData -> loadInitialData()
         }
@@ -128,6 +132,41 @@ class KhatmQuranViewModel(
             }
         }
 
+    }
+
+    private fun loadVersesBySura(sura:Int) {
+        viewModelScope.launch(Dispatchers.IO){
+            _state.update { it.copy(isLoading = true) }
+            val suraName = state.value.suraNames[sura]
+            var verses = getQuranVersesUseCase.bySuraName(suraName)
+            val translations = if (verses.isNotEmpty()) {
+                getQuranVersesUseCase.getSuraTranslate(verses.first().sura)
+            } else {
+                emptyList()
+            }
+
+            if (verses.isNotEmpty()) {
+                val firstVerse = verses.first()
+
+                val bismillahPattern = Regex(
+                    "بِسْمِ\\s*اللَّهِ\\s*الرَّحْمَـٰنِ\\s*الرَّحِيمِ"
+                )
+
+                val modifiedText = firstVerse.text.replace(bismillahPattern, "").trim()
+
+                val modifiedFirstVerse = firstVerse.copy(text = modifiedText)
+                verses = verses.toMutableList().apply { set(0, modifiedFirstVerse) }
+
+            }
+
+            _state.update {
+                it.copy(
+                    verses = verses,
+                    translations = translations,
+                    isLoading = false
+                )
+            }
+        }
     }
 
     private fun loadInitialData() {

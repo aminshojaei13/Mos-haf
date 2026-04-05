@@ -1,6 +1,5 @@
 package com.braveboy.mos_haf.presentation.feature.detail
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -26,9 +25,18 @@ class QuranDetailViewModel(
         val suraName: String = savedStateHandle.toRoute<QuranDetail>().sura
         _state.update { it.copy(suraName = suraName) }
         loadVersesAndTranslations(suraName)
+        getAllSura()
     }
 
-    private fun loadVersesAndTranslations(suraName: String) {
+    private fun getAllSura() {
+        viewModelScope.launch(Dispatchers.IO) {
+            getQuranVersesUseCase.getAllSura().let { suras ->
+                _state.update { it.copy(suraNames = suras) }
+            }
+        }
+    }
+
+    fun loadVersesAndTranslations(suraName: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _state.update { it.copy(isLoading = true) }
 
@@ -51,8 +59,6 @@ class QuranDetailViewModel(
                 val modifiedFirstVerse = firstVerse.copy(text = modifiedText)
                 verses = verses.toMutableList().apply { set(0, modifiedFirstVerse) }
 
-                Log.d("toni", "modifiedFirstVerse: $modifiedFirstVerse")
-                Log.d("toni", "verse: $verses")
             }
 
             _state.update {
@@ -62,7 +68,6 @@ class QuranDetailViewModel(
                     isLoading = false
                 )
             }
-
         }
     }
 }
