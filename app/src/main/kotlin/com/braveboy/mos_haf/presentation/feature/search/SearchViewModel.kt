@@ -15,16 +15,16 @@ class KhatmQuranViewModel(
     private val getQuranVersesUseCase: GetQuranVersesUseCase
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(KhatmQuranState())
-    val state: StateFlow<KhatmQuranState> = _state
+    private val _state = MutableStateFlow(SearchState())
+    val state: StateFlow<SearchState> = _state
 
     init {
         loadInitialData()
     }
 
-    fun handleIntent(intent: KhatmQuranIntent) {
+    fun handleIntent(intent: SearchIntent) {
         when (intent) {
-            is KhatmQuranIntent.LoadVersesByDetailedRange -> {
+            is SearchIntent.LoadVersesByDetailedRange -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     loadVersesByDetailedRange(
                         intent.startSura,
@@ -35,19 +35,19 @@ class KhatmQuranViewModel(
                 }
             }
 
-            is KhatmQuranIntent.LoadVersesByJozAndHezb -> {
+            is SearchIntent.LoadVersesByJozAndHezb -> {
                 loadVersesByJozAndHezb(
                     intent.joz,
                     intent.hezb
                 )
             }
 
-            is KhatmQuranIntent.LoadVersesBySura -> {
+            is SearchIntent.LoadVersesBySura -> {
                 loadVersesBySura(intent.sura)
             }
 
-            is KhatmQuranIntent.LoadSuraNames -> loadInitialData()
-            is KhatmQuranIntent.RefreshData -> loadInitialData()
+            is SearchIntent.LoadSuraNames -> loadInitialData()
+            is SearchIntent.RefreshData -> loadInitialData()
         }
     }
 

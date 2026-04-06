@@ -2,7 +2,7 @@ package com.braveboy.mos_haf.presentation.feature.search
 
 import com.braveboy.mos_haf.domain.model.Quran
 
-data class KhatmQuranState(
+data class SearchState(
     val isLoading: Boolean = false,
     val verses: List<Quran> = emptyList(),
     val translations: List<String> = emptyList(),

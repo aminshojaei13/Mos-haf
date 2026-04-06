@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -32,11 +33,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -63,6 +68,25 @@ import org.koin.androidx.compose.koinViewModel
 fun KhatmQuranScreen(navController: NavController) {
     val viewModel = koinViewModel<KhatmQuranViewModel>()
     val state = viewModel.state.collectAsStateWithLifecycle()
+    val sliderState = rememberSliderState(value = 0.5f, steps = 5)
+    var expandedFontSize by remember { mutableStateOf(false) }
+    var fontSize by remember {
+        mutableStateOf(28.sp)
+    }
+
+    LaunchedEffect(sliderState.value) {
+        sliderState.onValueChange.let {
+            when (sliderState.value) {
+                0.0f -> fontSize = 18.sp
+                0.16666667f -> fontSize = 20.sp
+                0.33333334f -> fontSize = 24.sp
+                0.5f -> fontSize = 28.sp
+                0.6666667f -> fontSize = 32.sp
+                0.8333333f -> fontSize = 36.sp
+                1.0f -> fontSize = 40.sp
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -76,6 +100,35 @@ fun KhatmQuranScreen(navController: NavController) {
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            expandedFontSize = true
+                        }
+                    ) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More options")
+
+                        DropdownMenu(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            shape = MaterialTheme.shapes.large,
+                            expanded = expandedFontSize,
+                            onDismissRequest = { expandedFontSize = false },
+                        ) {
+                            Text(
+                                text = stringResource(R.string.label_font_size),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            Slider(
+                                state = sliderState,
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -92,16 +145,18 @@ fun KhatmQuranScreen(navController: NavController) {
             state = state.value,
             onIntent = {
                 viewModel.handleIntent(it)
-            }
+            },
+            fontSize = fontSize
         )
     }
 }
 
 @Composable
 fun QuranContent(
-    state: KhatmQuranState,
-    onIntent: (KhatmQuranIntent) -> Unit,
-    modifier: Modifier = Modifier
+    state: SearchState,
+    onIntent: (SearchIntent) -> Unit,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit? = null
 ) {
     Column(
         modifier = modifier
@@ -116,7 +171,7 @@ fun QuranContent(
             state.isLoading -> LoadingIndicator()
             state.error != null -> ErrorView(
                 message = state.error,
-                onRetry = { onIntent(KhatmQuranIntent.RefreshData) }
+                onRetry = { onIntent(SearchIntent.RefreshData) }
             )
 
             state.verses.isNotEmpty() -> {
@@ -124,7 +179,8 @@ fun QuranContent(
                     modifier = Modifier.weight(1f),
                     verses = state.verses,
                     translations = state.translations,
-                    fontSize = 14.sp,
+                    fontSize = fontSize ?: 28.sp,
+                    overScrollEnable = false,
                     changeSura = {}
                 )
             }
@@ -134,8 +190,8 @@ fun QuranContent(
 
 @Composable
 fun SearchBox(
-    state: KhatmQuranState,
-    onClick: (KhatmQuranIntent) -> Unit
+    state: SearchState,
+    onClick: (SearchIntent) -> Unit
 ) {
     var suraIndex by remember { mutableStateOf<Int?>(null) }
     var startSuraIndex by remember { mutableStateOf<Int?>(null) }
@@ -180,7 +236,7 @@ fun SearchBox(
                         var sura = suraIndex
                         if (sura != null) {
                             onClick(
-                                KhatmQuranIntent.LoadVersesBySura(sura)
+                                SearchIntent.LoadVersesBySura(sura)
                             )
                             suraIndex = null
                         }
@@ -232,7 +288,7 @@ fun SearchBox(
 
                         if (joz != null && hezb != null) {
                             onClick(
-                                KhatmQuranIntent.LoadVersesByJozAndHezb(
+                                SearchIntent.LoadVersesByJozAndHezb(
                                     joz, hezb
                                 )
                             )
@@ -328,7 +384,7 @@ fun SearchBox(
 
                     if (sSura != null && eSura != null && sAya != null && eAya != null) {
                         onClick(
-                            KhatmQuranIntent.LoadVersesByDetailedRange(
+                            SearchIntent.LoadVersesByDetailedRange(
                                 sSura, sAya, eSura, eAya
                             )
                         )
@@ -355,12 +411,14 @@ fun SearchBox(
                     style = MaterialTheme.typography.bodyLarge
                 )
 
-                Spacer(Modifier.width(8.dp))
+                if (showSearchBox) {
+                    Spacer(Modifier.width(8.dp))
 
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null
-                )
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null
+                    )
+                }
             }
         }
     }

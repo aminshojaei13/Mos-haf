@@ -137,6 +137,7 @@ fun QuranDetailScreen(
                 translations = state.translations,
                 fontSize = fontSize,
                 suras = state.suraNames,
+                overScrollEnable = true,
                 changeSura = {
                     viewModel.loadVersesAndTranslations(
                         it

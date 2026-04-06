@@ -1,22 +1,22 @@
 package com.braveboy.mos_haf.presentation.feature.search
 
-sealed class KhatmQuranIntent {
+sealed class SearchIntent {
     data class LoadVersesByDetailedRange(
         val startSura: Int,
         val startAya: Int,
         val endSura: Int,
         val endAya: Int
-    ) : KhatmQuranIntent()
+    ) : SearchIntent()
 
     data class LoadVersesByJozAndHezb(
         val joz: Int,
         val hezb: Int,
-    ) : KhatmQuranIntent()
+    ) : SearchIntent()
 
     data class LoadVersesBySura(
         val sura: Int,
-    ) : KhatmQuranIntent()
+    ) : SearchIntent()
 
-    object LoadSuraNames : KhatmQuranIntent()
-    object RefreshData : KhatmQuranIntent()
+    object LoadSuraNames : SearchIntent()
+    object RefreshData : SearchIntent()
 }

@@ -1,4 +1,4 @@
-package com.braveboy.mos_haf.presentation.feature.search
+package com.braveboy.mos_haf.presentation.common_compose
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
