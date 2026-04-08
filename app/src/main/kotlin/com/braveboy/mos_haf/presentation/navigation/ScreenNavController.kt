@@ -10,7 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.braveboy.mos_haf.presentation.feature.detail.QuranDetailScreen
 import com.braveboy.mos_haf.presentation.feature.home.HomeScreen
-import com.braveboy.mos_haf.presentation.feature.search.KhatmQuranScreen
+import com.braveboy.mos_haf.presentation.feature.search.SearchScreen
 import com.braveboy.mos_haf.presentation.feature.suralist.SuraListScreen
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 
@@ -35,8 +35,9 @@ fun ScreenNavController() {
                     navController = navController
                 )
             }
-            composable(Screen.Search.route) {
-                KhatmQuranScreen(navController)
+            composable<Screen.Search> { backStackEntry ->
+                val from: Screen.Search = backStackEntry.toRoute()
+                SearchScreen(navController)
             }
         }
     }

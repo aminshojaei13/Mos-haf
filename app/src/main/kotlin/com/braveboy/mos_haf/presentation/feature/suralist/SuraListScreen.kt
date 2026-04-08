@@ -81,7 +81,12 @@ fun SuraListScreen(navController: NavController) {
                         )
                         .background(Color.Transparent)
                         .safeClickable {
-                            navController.navigate(QuranDetail(state.value[it]))
+                            navController.navigate(
+                                QuranDetail(
+                                    sura = state.value[it],
+                                    fromLast = false
+                                )
+                            )
                         },
                 ) {
                     Text(

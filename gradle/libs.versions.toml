@@ -2,6 +2,7 @@
 accompanistSystemuicontroller = "0.36.0"
 agp = "8.13.0"
 composeBom = "2026.02.00"
+datastore = "1.1.7"
 hiltNavigationCompose = "1.3.0"
 koinAndroidxCompose = "4.1.1"
 koinAndroid = "4.1.1"
@@ -15,6 +16,7 @@ activityCompose = "1.12.4"
 lifecycleViewmodelCompose = "2.10.0"
 room = "2.8.4"
 serialization = "2.3.0"
+kotlinSerialization = "1.6.3"
 navigationCompose = "2.9.7"
 workRuntimeKtx = "2.10.3"
 materialIconsExtended = "1.7.8"
@@ -22,6 +24,7 @@ materialIconsExtended = "1.7.8"
 [libraries]
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleViewmodelCompose" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
@@ -44,6 +47,7 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsExtended" }
+kotlinSerialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinSerialization" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

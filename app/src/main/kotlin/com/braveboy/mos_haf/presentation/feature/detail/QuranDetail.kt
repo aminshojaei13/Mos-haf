@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -44,6 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.R
+import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import ir.partsoftware.cup.common.compose.modifiers.safeClickable
@@ -58,9 +60,8 @@ fun QuranDetailScreen(
     val state by viewModel.state.collectAsState()
     var expandedFontSize by remember { mutableStateOf(false) }
     val sliderState = rememberSliderState(value = 0.5f, steps = 5)
-    var fontSize by remember {
-        mutableStateOf(28.sp)
-    }
+    var fontSize by remember { mutableStateOf(28.sp) }
+    val lazyState = rememberLazyListState()
 
     LaunchedEffect(sliderState.value) {
         sliderState.onValueChange.let {
@@ -73,6 +74,12 @@ fun QuranDetailScreen(
                 0.8333333f -> fontSize = 36.sp
                 1.0f -> fontSize = 40.sp
             }
+        }
+    }
+
+    LaunchedEffect(true) {
+        if (state.lastRead?.start != null) {
+            lazyState.animateScrollToItem(state.lastRead?.start?.aya ?: 0)
         }
     }
 
@@ -134,10 +141,20 @@ fun QuranDetailScreen(
             AyatComponent(
                 modifier = Modifier.padding(paddingValues),
                 verses = state.verses,
+                lazyState = lazyState,
                 translations = state.translations,
                 fontSize = fontSize,
                 suras = state.suraNames,
                 overScrollEnable = true,
+                bookmarked = {
+                    viewModel.saveBookmark(
+                        LastReadModel(
+                            source = "detail",
+                            start = it,
+                            end = state.verses.last()
+                        )
+                    )
+                },
                 changeSura = {
                     viewModel.loadVersesAndTranslations(
                         it

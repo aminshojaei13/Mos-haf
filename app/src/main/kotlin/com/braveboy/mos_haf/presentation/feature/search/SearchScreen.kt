@@ -58,15 +58,17 @@ import androidx.navigation.NavController
 import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.components.ErrorView
 import com.braveboy.mos_haf.components.LoadingIndicator
+import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianWord
+import com.braveboy.mos_haf.presentation.feature.search.SearchIntent.SaveBookmark
 import ir.partsoftware.cup.common.compose.modifiers.safeClickable
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun KhatmQuranScreen(navController: NavController) {
-    val viewModel = koinViewModel<KhatmQuranViewModel>()
+fun SearchScreen(navController: NavController) {
+    val viewModel = koinViewModel<SearchViewModel>()
     val state = viewModel.state.collectAsStateWithLifecycle()
     val sliderState = rememberSliderState(value = 0.5f, steps = 5)
     var expandedFontSize by remember { mutableStateOf(false) }
@@ -181,7 +183,17 @@ fun QuranContent(
                     translations = state.translations,
                     fontSize = fontSize ?: 28.sp,
                     overScrollEnable = false,
-                    changeSura = {}
+                    bookmarked = {
+                        onIntent(
+                            SaveBookmark(
+                                LastReadModel(
+                                    source = "search",
+                                    start = it,
+                                    end = state.verses.last()
+                                )
+                            )
+                        )
+                    }
                 )
             }
         }
@@ -201,6 +213,12 @@ fun SearchBox(
     var jozIndex by remember { mutableStateOf<Int?>(null) }
     var hezbIndex by remember { mutableStateOf<Int?>(null) }
     var showSearchBox by remember { mutableStateOf(true) }
+
+    LaunchedEffect(state.lastRead?.start) {
+        if (state.lastRead?.start != null) {
+            showSearchBox = false
+        }
+    }
 
     Column(
         modifier = Modifier

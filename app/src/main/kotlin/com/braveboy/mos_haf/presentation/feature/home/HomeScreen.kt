@@ -29,6 +29,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,13 +49,25 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.BuildConfig
 import com.braveboy.mos_haf.R
+import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
 import com.braveboy.mos_haf.presentation.navigation.Screen
+import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import ir.partsoftware.cup.common.compose.modifiers.safeClickable
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(
+    navController: NavController,
+) {
+    val viewModel = koinViewModel<HomeViewModel>()
+    val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(true) {
+        viewModel.getLastRead()
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -93,7 +108,20 @@ fun HomeScreen(navController: NavController) {
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            //LastReadCard()
+            state.let { lastRead ->
+                LastReadCard(
+                    suraName = lastRead.start?.suraName.orEmpty(),
+                    ayaNumber = lastRead.start?.aya.toString().toPersianNumber()
+                ) {
+                    state.let {
+                        if (it.source == "detail") {
+                            navController.navigate(QuranDetail(it.start?.suraName.orEmpty(), true))
+                        } else {
+                            navController.navigate(Screen.Search(true))
+                        }
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -103,8 +131,8 @@ fun HomeScreen(navController: NavController) {
                         navController.navigate(Screen.SuraList.route)
                     }
 
-                    Tile.KHATM -> {
-                        navController.navigate(Screen.Search.route)
+                    Tile.Search -> {
+                        navController.navigate(Screen.Search(false))
                     }
 
                     Tile.VOICE -> {
@@ -182,7 +210,11 @@ fun HomeScreen(navController: NavController) {
 }
 
 @Composable
-fun LastReadCard() {
+fun LastReadCard(
+    suraName: String,
+    ayaNumber: String,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
@@ -203,12 +235,12 @@ fun LastReadCard() {
                     color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
-                    text = "فاتحه",
+                    text = suraName,
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
                 Text(
-                    text = "آیه شماره ۱",
+                    text = "آیه شماره $ayaNumber",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
@@ -219,7 +251,9 @@ fun LastReadCard() {
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .safeClickable { onClick() },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
@@ -269,7 +303,7 @@ fun PopularSection(
                 modifier = Modifier
                     .weight(1f)
                     .safeClickable {
-                        onClick(Tile.KHATM)
+                        onClick(Tile.Search)
                     },
                 title = stringResource(R.string.label_search),
                 imageRes = R.drawable.ic_khatm_quran,
@@ -329,7 +363,7 @@ fun PopularCard(
 
 enum class Tile {
     QURAN,
-    KHATM,
+    Search,
     VOICE,
 }
 

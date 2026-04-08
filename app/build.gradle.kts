@@ -94,4 +94,9 @@ dependencies {
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
+
+    // Datastore
+    implementation(libs.datastore.preferences)
+
+    implementation(libs.kotlinSerialization)
 }

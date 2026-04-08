@@ -1,5 +1,7 @@
 package com.braveboy.mos_haf.presentation.feature.search
 
+import com.braveboy.mos_haf.domain.model.LastReadModel
+
 sealed class SearchIntent {
     data class LoadVersesByDetailedRange(
         val startSura: Int,
@@ -15,6 +17,10 @@ sealed class SearchIntent {
 
     data class LoadVersesBySura(
         val sura: Int,
+    ) : SearchIntent()
+
+    data class SaveBookmark(
+        val lastRead: LastReadModel,
     ) : SearchIntent()
 
     object LoadSuraNames : SearchIntent()
