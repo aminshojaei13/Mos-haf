@@ -1,9 +1,12 @@
 package com.braveboy.mos_haf.presentation.feature.detail
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.braveboy.mos_haf.AppConstants.BOOKMARK
+import com.braveboy.mos_haf.AppConstants.FONT_SIZE
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
@@ -27,6 +30,7 @@ class QuranDetailViewModel(
     val state: StateFlow<QuranDetailState> = _state.asStateFlow()
 
     init {
+        getFontSize()
         savedStateHandle.toRoute<QuranDetail>().let { detail ->
             if (detail.fromLast) {
                 _state.update { it.copy(suraName = detail.sura) }
@@ -103,7 +107,21 @@ class QuranDetailViewModel(
     fun saveBookmark(verses: LastReadModel) {
         viewModelScope.launch(Dispatchers.IO) {
             val bookmark = Json.encodeToString(verses)
-            preferencesRepository.saveSetting("bookmark", bookmark)
+            preferencesRepository.saveSetting(BOOKMARK, bookmark)
+        }
+    }
+
+    fun saveFontSize(fontSize: Float) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting(FONT_SIZE, fontSize.toString())
+        }
+    }
+
+    fun getFontSize() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val fontSize = preferencesRepository.readSetting(FONT_SIZE)
+            _state.update { it.copy(fontSize = fontSize?.toFloatOrNull()) }
+            Log.d("xavi", "getFontSize: ${state.value.fontSize}")
         }
     }
 }

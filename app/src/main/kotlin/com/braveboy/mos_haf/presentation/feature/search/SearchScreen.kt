@@ -72,8 +72,11 @@ fun SearchScreen(navController: NavController) {
     val state = viewModel.state.collectAsStateWithLifecycle()
     val sliderState = rememberSliderState(value = 0.5f, steps = 5)
     var expandedFontSize by remember { mutableStateOf(false) }
-    var fontSize by remember {
-        mutableStateOf(28.sp)
+    var fontSize by remember { mutableStateOf(28.sp) }
+
+    LaunchedEffect(state.value.fontSize) {
+        Log.d("xavi", "QuranDetailScreen: ${state.value.fontSize}")
+        sliderState.value = state.value.fontSize ?: sliderState.value
     }
 
     LaunchedEffect(sliderState.value) {
@@ -118,7 +121,10 @@ fun SearchScreen(navController: NavController) {
                                 .padding(16.dp),
                             shape = MaterialTheme.shapes.large,
                             expanded = expandedFontSize,
-                            onDismissRequest = { expandedFontSize = false },
+                            onDismissRequest = {
+                                viewModel.saveFontSize(sliderState.value)
+                                expandedFontSize = false
+                            },
                         ) {
                             Text(
                                 text = stringResource(R.string.label_font_size),
@@ -492,7 +498,8 @@ fun SuraDropdown(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.5f)
         ) {
-            suraNames.map { it.toPersianWord() }.filter { it.contains(selectedSuraName.toPersianWord()) }
+            suraNames.map { it.toPersianWord() }
+                .filter { it.contains(selectedSuraName.toPersianWord()) }
                 .forEachIndexed { _, name ->
                     DropdownMenuItem(
                         text = { Text(name) },

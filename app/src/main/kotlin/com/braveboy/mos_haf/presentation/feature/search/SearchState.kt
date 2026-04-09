@@ -12,5 +12,6 @@ data class SearchState(
     val ayaCounts: List<Int> = emptyList(),
     val error: String? = null,
     val currentPage: Int = 1,
+    val fontSize: Float? = null,
     val totalVerses: Int = 0
 )

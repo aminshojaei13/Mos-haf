@@ -1,5 +1,6 @@
 package com.braveboy.mos_haf.presentation.feature.detail
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -64,6 +65,11 @@ fun QuranDetailScreen(
     var fontSize by remember { mutableStateOf(28.sp) }
     val lazyState = rememberLazyListState()
 
+    LaunchedEffect(state.fontSize) {
+        Log.d("xavi", "QuranDetailScreen: ${state.fontSize}")
+        sliderState.value = state.fontSize ?: sliderState.value
+    }
+
     LaunchedEffect(sliderState.value) {
         sliderState.onValueChange.let {
             when (sliderState.value) {
@@ -112,7 +118,10 @@ fun QuranDetailScreen(
                                 .padding(16.dp),
                             shape = MaterialTheme.shapes.large,
                             expanded = expandedFontSize,
-                            onDismissRequest = { expandedFontSize = false },
+                            onDismissRequest = {
+                                viewModel.saveFontSize(sliderState.value)
+                                expandedFontSize = false
+                            },
                         ) {
                             Text(
                                 text = stringResource(R.string.label_font_size),

@@ -1,9 +1,11 @@
 package com.braveboy.mos_haf.presentation.feature.search
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.braveboy.mos_haf.AppConstants.FONT_SIZE
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
@@ -28,6 +30,8 @@ class SearchViewModel(
     val state: StateFlow<SearchState> = _state
 
     init {
+        getFontSize()
+
         viewModelScope.launch(Dispatchers.IO) {
             savedStateHandle.toRoute<Screen.Search>().let { detail ->
                 if (detail.fromLast) {
@@ -233,6 +237,19 @@ class SearchViewModel(
                     endAya = it.end?.aya ?: 0
                 )
             }
+        }
+    }
+
+    fun saveFontSize(fontSize: Float) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting(FONT_SIZE, fontSize.toString())
+        }
+    }
+
+    fun getFontSize() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val fontSize = preferencesRepository.readSetting(FONT_SIZE)
+            _state.update { it.copy(fontSize = fontSize?.toFloatOrNull()) }
         }
     }
 }

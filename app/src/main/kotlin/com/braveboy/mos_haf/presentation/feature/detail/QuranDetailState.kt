@@ -10,5 +10,6 @@ data class QuranDetailState(
     val suraNames: List<String> = emptyList(),
     val translations: List<String> = emptyList(),
     val suraName: String = "",
+    val fontSize: Float? = null,
     val isLoading: Boolean = true
 )
