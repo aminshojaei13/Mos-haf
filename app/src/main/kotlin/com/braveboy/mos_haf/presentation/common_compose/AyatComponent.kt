@@ -112,8 +112,7 @@ fun AyatComponent(
                         )
                     )
                 )
-                .padding(horizontal = 12.dp)
-                .then(modifier),
+                .padding(12.dp),
             state = lazyState,
         ) {
             item {

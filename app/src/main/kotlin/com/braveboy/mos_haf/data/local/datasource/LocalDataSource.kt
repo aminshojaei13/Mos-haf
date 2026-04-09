@@ -41,6 +41,8 @@ class LocalDataSource(private val database: AppDatabase) {
 
     fun getAllSura(): List<String> = database.quranDao().getAllSura()
 
+    fun getAllSuraWithDetail(): List<QuranEntity> = database.quranDao().getAllSuraWithDetail()
+
     fun getAyaCounts(): List<Int> = database.quranDao().getAyaCounts()
 
     fun getSuraTranslate(suraNumber: Int): List<String> = database.quranDao().getSuraTranslate(suraNumber)

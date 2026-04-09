@@ -492,7 +492,7 @@ fun SuraDropdown(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.5f)
         ) {
-            suraNames.map { it.toPersianWord() }.filter { it.contains(selectedSuraName) }
+            suraNames.map { it.toPersianWord() }.filter { it.contains(selectedSuraName.toPersianWord()) }
                 .forEachIndexed { _, name ->
                     DropdownMenuItem(
                         text = { Text(name) },

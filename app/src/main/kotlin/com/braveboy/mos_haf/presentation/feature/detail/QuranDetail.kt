@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -136,7 +137,9 @@ fun QuranDetailScreen(
         }
     ) { paddingValues ->
         if (state.isLoading) {
-            CircularProgressIndicator()
+            Box(Modifier.fillMaxSize()) {
+                CircularProgressIndicator(modifier = Modifier.size(64.dp))
+            }
         } else {
             AyatComponent(
                 modifier = Modifier.padding(paddingValues),

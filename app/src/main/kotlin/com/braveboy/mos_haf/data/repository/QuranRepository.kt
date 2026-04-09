@@ -1,10 +1,10 @@
 package com.braveboy.mos_haf.data.repository
 
 import com.braveboy.mos_haf.data.local.datasource.LocalDataSource
-import com.braveboy.mos_haf.domain.model.Quran
-import com.braveboy.mos_haf.domain.model.QuranCleanText
 import com.braveboy.mos_haf.data.local.entity.QuranCleanTextEntity
 import com.braveboy.mos_haf.data.local.entity.QuranEntity
+import com.braveboy.mos_haf.domain.model.Quran
+import com.braveboy.mos_haf.domain.model.QuranCleanText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -57,19 +57,29 @@ class QuranRepository(private val localDataSource: LocalDataSource) {
 
     fun getAllSura(): List<String> = localDataSource.getAllSura()
 
+    fun getAllSuraWithDetail(): List<Quran> =
+        localDataSource.getAllSuraWithDetail().map { quranEntity ->
+            quranEntity.toDomain()
+        }
+
     fun getAyaCounts(): List<Int> = localDataSource.getAyaCounts()
 
     fun getSuraTranslate(suraNumber: Int): List<String> =
         localDataSource.getSuraTranslate(suraNumber)
 
-    fun getByTranslateRange(startSura: Int, startAya: Int, endSura: Int, endAya: Int): List<String> =
-        localDataSource.getByTranslateRange(startSura,startAya,endSura,endAya)
+    fun getByTranslateRange(
+        startSura: Int,
+        startAya: Int,
+        endSura: Int,
+        endAya: Int
+    ): List<String> =
+        localDataSource.getByTranslateRange(startSura, startAya, endSura, endAya)
 
     fun getByJozAndHezb(
         joz: Int,
         hezb: Int,
     ): List<Quran> =
-        localDataSource.getByJozAndHezb(joz,hezb).map {
+        localDataSource.getByJozAndHezb(joz, hezb).map {
             it.toDomain()
         }
 

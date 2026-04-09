@@ -1,6 +1,10 @@
 package com.braveboy.mos_haf.presentation.feature.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,12 +22,15 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -32,9 +39,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -63,6 +73,8 @@ fun HomeScreen(
 ) {
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val themeMode by remember { mutableStateOf(false) }
 
     LaunchedEffect(true) {
         viewModel.getLastRead()
@@ -87,11 +99,6 @@ fun HomeScreen(
 
                     }
                 },
-                /*actions = {
-                    IconButton(onClick = { *//*TODO*//* }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
-                    }
-                },*/
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
@@ -109,15 +116,17 @@ fun HomeScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             state.let { lastRead ->
-                LastReadCard(
-                    suraName = lastRead.start?.suraName.orEmpty(),
-                    ayaNumber = lastRead.start?.aya.toString().toPersianNumber()
-                ) {
-                    state.let {
-                        if (it.source == "detail") {
-                            navController.navigate(QuranDetail(it.start?.suraName.orEmpty(), true))
-                        } else {
-                            navController.navigate(Screen.Search(true))
+                AnimatedVisibility(lastRead.start != null) {
+                    LastReadCard(
+                        suraName = lastRead.start?.suraName.orEmpty(),
+                        ayaNumber = lastRead.start?.aya.toString().toPersianNumber()
+                    ) {
+                        state.let {
+                            if (it.source == "detail") {
+                                navController.navigate(QuranDetail(it.start?.suraName.orEmpty(), true))
+                            } else {
+                                navController.navigate(Screen.Search(true))
+                            }
                         }
                     }
                 }
@@ -329,7 +338,7 @@ fun PopularCard(
     imageRes: Int,
 ) {
     Card(
-        modifier = modifier.height(180.dp),
+        modifier = modifier.height(120.dp),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary),
     ) {

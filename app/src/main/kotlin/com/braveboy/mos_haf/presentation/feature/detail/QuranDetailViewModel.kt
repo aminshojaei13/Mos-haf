@@ -31,15 +31,6 @@ class QuranDetailViewModel(
             if (detail.fromLast) {
                 _state.update { it.copy(suraName = detail.sura) }
                 getBookmark()
-                viewModelScope.launch(Dispatchers.IO) {
-                    state.value.lastRead?.let {
-                        if (it.start != null) {
-                            loadVersesAndTranslations(
-                                it.start.suraName.orEmpty()
-                            )
-                        }
-                    }
-                }
             } else {
                 _state.update { it.copy(suraName = detail.sura) }
                 loadVersesAndTranslations(detail.sura)
@@ -94,9 +85,16 @@ class QuranDetailViewModel(
     private fun getBookmark() {
         viewModelScope.launch(Dispatchers.IO) {
             val detail = preferencesRepository.readSetting("bookmark")
-            Json.decodeFromString<LastReadModel>(detail.orEmpty()).let {
+            Json.decodeFromString<LastReadModel>(detail.orEmpty()).let { readModel ->
                 _state.update { quranDetailState ->
-                    quranDetailState.copy(lastRead = it)
+                    quranDetailState.copy(lastRead = readModel)
+                }
+                state.value.lastRead?.let {
+                    if (it.start != null) {
+                        loadVersesAndTranslations(
+                            it.start.suraName.orEmpty()
+                        )
+                    }
                 }
             }
         }

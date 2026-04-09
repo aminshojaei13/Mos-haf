@@ -21,14 +21,21 @@ class GetQuranVersesUseCase(private val repository: QuranRepository) {
         joz: Int,
         hezb: Int,
     ): List<Quran> =
-        repository.getByJozAndHezb(joz,hezb)
+        repository.getByJozAndHezb(joz, hezb)
 
     fun getAllSura(): List<String> = repository.getAllSura()
+
+    fun getAllSuraWithDetail(): List<Quran> = repository.getAllSuraWithDetail()
 
     fun getAyaCounts(): List<Int> = repository.getAyaCounts()
 
     fun getSuraTranslate(suraNumber: Int): List<String> = repository.getSuraTranslate(suraNumber)
 
-    fun getByTranslateRange(startSura: Int, startAya: Int, endSura: Int, endAya: Int): List<String> =
-        repository.getByTranslateRange(startSura,startAya,endSura,endAya)
+    fun getByTranslateRange(
+        startSura: Int,
+        startAya: Int,
+        endSura: Int,
+        endAya: Int
+    ): List<String> =
+        repository.getByTranslateRange(startSura, startAya, endSura, endAya)
 }

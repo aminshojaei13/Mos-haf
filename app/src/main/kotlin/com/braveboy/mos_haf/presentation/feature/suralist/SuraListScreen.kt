@@ -2,7 +2,8 @@ package com.braveboy.mos_haf.presentation.feature.suralist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -17,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -29,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.R
+import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import ir.partsoftware.cup.common.compose.modifiers.safeClickable
@@ -70,7 +74,7 @@ fun SuraListScreen(navController: NavController) {
                 .padding(16.dp)
         ) {
             items(state.value.size) {
-                Box(
+                Row(
                     modifier = Modifier
                         .padding(vertical = 16.dp)
                         .fillMaxWidth()
@@ -83,20 +87,32 @@ fun SuraListScreen(navController: NavController) {
                         .safeClickable {
                             navController.navigate(
                                 QuranDetail(
-                                    sura = state.value[it],
+                                    sura = state.value[it].suraName.orEmpty(),
                                     fromLast = false
                                 )
                             )
                         },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .align(Alignment.Center)
+                            .weight(1f)
                             .padding(vertical = 16.dp, horizontal = 16.dp),
-                        text = state.value[it],
+                        text = state.value[it].suraName ?: "",
+                        textAlign = TextAlign.Start,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+
+                    VerticalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+                    Text(
+                        modifier = Modifier
+                            .padding(vertical = 4.dp, horizontal = 16.dp),
+                        text = "جز : " + state.value[it].juz.toString().toPersianNumber(),
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 }

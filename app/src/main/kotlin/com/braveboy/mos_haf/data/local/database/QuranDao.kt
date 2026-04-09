@@ -47,6 +47,9 @@ interface QuranDao {
     @Query(" SELECT DISTINCT sura_name FROM quran_text ORDER BY sura ASC")
     fun getAllSura(): List<String>
 
+    @Query(" SELECT DISTINCT * FROM quran_text ORDER BY sura ASC")
+    fun getAllSuraWithDetail(): List<QuranEntity>
+
     @Query("SELECT COUNT(*) FROM quran_text GROUP BY sura ORDER BY sura")
     fun getAyaCounts(): List<Int>
 
