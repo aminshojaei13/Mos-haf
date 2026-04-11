@@ -1,6 +1,7 @@
 package com.braveboy.mos_haf.presentation.feature.search
 
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
@@ -257,7 +259,7 @@ fun SearchBox(
                     shape = MaterialTheme.shapes.small,
                     enabled = suraIndex != null,
                     onClick = {
-                        var sura = suraIndex
+                        val sura = suraIndex
                         if (sura != null) {
                             onClick(
                                 SearchIntent.LoadVersesBySura(sura)
@@ -466,16 +468,33 @@ fun SuraDropdown(
 
     Box(modifier = modifier) {
         TextField(
-            value = selectedSuraName,
+            value = selectedSuraName.trim(),
             onValueChange = { selectedSuraName = it },
             label = { Text(label) },
             readOnly = false,
             trailingIcon = {
-                Icon(
-                    Icons.Default.ArrowDropDown,
-                    contentDescription = null,
-                    Modifier.safeClickable { expanded = !expanded }
-                )
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AnimatedVisibility(selectedSuraName.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(16.dp)
+                                .safeClickable { selectedSuraName = "" }
+                        )
+                    }
+
+                    Spacer(Modifier.width(4.dp))
+
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        modifier = Modifier.safeClickable { expanded = !expanded }
+                    )
+                }
             },
             modifier = Modifier
                 .clip(MaterialTheme.shapes.small)

@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -50,7 +50,7 @@ import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
 import ir.partsoftware.cup.common.compose.modifiers.safeClickable
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("FrequentlyChangingValue")
+@SuppressLint("FrequentlyChangingValue", "UnusedBoxWithConstraintsScope")
 @Composable
 fun AyatComponent(
     modifier: Modifier = Modifier,
@@ -97,22 +97,36 @@ fun AyatComponent(
         }
     }
 
-    Box(modifier = modifier) {
-        LazyColumn(
-            modifier = Modifier
-                .padding(vertical = 16.dp)
-                .border(
-                    width = 1.dp,
-                    shape = RoundedCornerShape(topStartPercent = 8, topEndPercent = 8),
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primary,
-                            MaterialTheme.colorScheme.background,
-                            MaterialTheme.colorScheme.background
-                        )
+    Box(
+        modifier = modifier
+            .padding(vertical = 16.dp)
+            .border(
+                width = 1.dp,
+                shape = RoundedCornerShape(topStartPercent = 8, topEndPercent = 8),
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.background
                     )
                 )
-                .padding(12.dp),
+            )
+    ) {
+        val visibleItemsInfo = lazyState.layoutInfo.visibleItemsInfo
+
+        VerticalSlider(
+            modifier = Modifier
+                .padding(top = 28.dp)
+                .padding(start = 4.dp)
+                .fillMaxHeight(),
+            value = if (visibleItemsInfo.isNotEmpty()) {
+                visibleItemsInfo.last().index.toFloat() / verses.size
+            } else 0f,
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .padding(16.dp),
             state = lazyState,
         ) {
             item {

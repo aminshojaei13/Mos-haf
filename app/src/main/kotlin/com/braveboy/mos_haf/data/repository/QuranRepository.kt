@@ -53,7 +53,7 @@ class QuranRepository(private val localDataSource: LocalDataSource) {
             entities.map { it.toDomain() }
         }
 
-    suspend fun getQuranCount(): Int = localDataSource.getQuranCount()
+    fun getQuranCount(): Int = localDataSource.getQuranCount()
 
     fun getAllSura(): List<String> = localDataSource.getAllSura()
 
