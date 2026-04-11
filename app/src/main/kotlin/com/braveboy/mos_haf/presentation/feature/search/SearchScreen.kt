@@ -21,6 +21,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
@@ -60,11 +62,11 @@ import androidx.navigation.NavController
 import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.components.ErrorView
 import com.braveboy.mos_haf.components.LoadingIndicator
+import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianWord
 import com.braveboy.mos_haf.presentation.feature.search.SearchIntent.SaveBookmark
-import ir.partsoftware.cup.common.compose.modifiers.safeClickable
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -128,6 +130,32 @@ fun SearchScreen(navController: NavController) {
                                 expandedFontSize = false
                             },
                         ) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (state.value.isDarkMode) "حالت روشن " else "حالت تیره ",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .safeClickable {
+                                            viewModel.handleIntent(SearchIntent.SaveTheme(!state.value.isDarkMode))
+                                        },
+                                    imageVector = if (state.value.isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                    contentDescription = null
+                                )
+                            }
+
+                            HorizontalDivider(
+                                Modifier.padding(vertical = 8.dp),
+                                DividerDefaults.Thickness,
+                                DividerDefaults.color
+                            )
+
                             Text(
                                 text = stringResource(R.string.label_font_size),
                                 style = MaterialTheme.typography.bodyLarge

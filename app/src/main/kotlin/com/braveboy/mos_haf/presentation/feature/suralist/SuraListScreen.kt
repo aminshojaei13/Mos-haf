@@ -35,7 +35,7 @@ import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
-import ir.partsoftware.cup.common.compose.modifiers.safeClickable
+import com.braveboy.mos_haf.components.safeClickable
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

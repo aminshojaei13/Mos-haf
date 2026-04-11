@@ -47,7 +47,7 @@ import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.domain.model.Quran
 import com.braveboy.mos_haf.presentation.feature.detail.VerseItem
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
-import ir.partsoftware.cup.common.compose.modifiers.safeClickable
+import com.braveboy.mos_haf.components.safeClickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("FrequentlyChangingValue", "UnusedBoxWithConstraintsScope")

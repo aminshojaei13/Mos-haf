@@ -1,4 +1,4 @@
-package ir.partsoftware.cup.common.compose.modifiers
+package com.braveboy.mos_haf.components
 
 import android.os.SystemClock
 import androidx.compose.foundation.Indication
@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.platform.inspectable
 import androidx.compose.ui.semantics.Role
-import com.braveboy.mos_haf.components.SafeClickDetector
 
 fun Modifier.safeClickable(
     enabled: Boolean = true,

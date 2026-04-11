@@ -19,6 +19,10 @@ sealed class SearchIntent {
         val sura: Int,
     ) : SearchIntent()
 
+    data class SaveTheme(
+        val isDark: Boolean,
+    ) : SearchIntent()
+
     data class SaveBookmark(
         val lastRead: LastReadModel,
     ) : SearchIntent()

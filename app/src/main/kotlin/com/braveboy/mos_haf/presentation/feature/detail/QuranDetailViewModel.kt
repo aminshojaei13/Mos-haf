@@ -30,6 +30,7 @@ class QuranDetailViewModel(
     val state: StateFlow<QuranDetailState> = _state.asStateFlow()
 
     init {
+        getTheme()
         getFontSize()
         savedStateHandle.toRoute<QuranDetail>().let { detail ->
             if (detail.fromLast) {
@@ -108,6 +109,20 @@ class QuranDetailViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val bookmark = Json.encodeToString(verses)
             preferencesRepository.saveSetting(BOOKMARK, bookmark)
+        }
+    }
+
+    fun getTheme() {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.readSettingAsFlow("theme").collect { theme ->
+                _state.update { it.copy(isDarkMode = theme.toBoolean()) }
+            }
+        }
+    }
+
+    fun saveTheme(isDark: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting("theme", isDark.toString())
         }
     }
 

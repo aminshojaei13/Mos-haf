@@ -3,6 +3,7 @@ package com.braveboy.mos_haf.presentation.feature.detail
 import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,11 +16,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +39,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,10 +53,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.R
+import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
-import ir.partsoftware.cup.common.compose.modifiers.safeClickable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +72,7 @@ fun QuranDetailScreen(
     val sliderState = rememberSliderState(value = 0.5f, steps = 5)
     var fontSize by remember { mutableStateOf(28.sp) }
     val lazyState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(state.fontSize) {
         Log.d("xavi", "QuranDetailScreen: ${state.fontSize}")
@@ -123,6 +132,30 @@ fun QuranDetailScreen(
                                 expandedFontSize = false
                             },
                         ) {
+                            Row(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = if (state.isDarkMode) "حالت روشن " else "حالت تیره ",
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Icon(
+                                    modifier = Modifier
+                                        .padding(8.dp)
+                                        .safeClickable {
+                                            scope.launch(Dispatchers.IO) {
+                                                viewModel.saveTheme(!state.isDarkMode)
+                                            }
+                                        },
+                                    imageVector = if (state.isDarkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                    contentDescription = null
+                                )
+                            }
+
+                            HorizontalDivider(Modifier.padding(vertical = 8.dp), DividerDefaults.Thickness, DividerDefaults.color)
+
                             Text(
                                 text = stringResource(R.string.label_font_size),
                                 style = MaterialTheme.typography.bodyLarge

@@ -1,6 +1,7 @@
 package com.braveboy.mos_haf.ui.theme
 
 import android.app.Activity
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -55,6 +56,8 @@ fun MoshafTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }
+
+    Log.d("toni", "MoshafTheme: $darkTheme")
 
     MaterialTheme(
         colorScheme = colorScheme,

@@ -19,6 +19,8 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,11 +53,13 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.BuildConfig
 import com.braveboy.mos_haf.R
+import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
 import com.braveboy.mos_haf.presentation.navigation.Screen
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
-import ir.partsoftware.cup.common.compose.modifiers.safeClickable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +69,8 @@ fun HomeScreen(
 ) {
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
+    val themeMode by viewModel.theme.collectAsState()
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(true) {
         viewModel.getLastRead()
@@ -88,11 +95,25 @@ fun HomeScreen(
 
                     }
                 },
+                actions = {
+                    Icon(
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .safeClickable {
+                                scope.launch(Dispatchers.IO) {
+                                    viewModel.saveTheme(!themeMode)
+                                }
+                            },
+                        imageVector = if (themeMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                        contentDescription = null
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
+
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         val uriHandler = LocalUriHandler.current

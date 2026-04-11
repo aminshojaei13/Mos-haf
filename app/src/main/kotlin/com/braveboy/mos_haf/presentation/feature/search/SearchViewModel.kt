@@ -29,6 +29,7 @@ class SearchViewModel(
     val state: StateFlow<SearchState> = _state
 
     init {
+        getTheme()
         getFontSize()
 
         viewModelScope.launch(Dispatchers.IO) {
@@ -70,6 +71,8 @@ class SearchViewModel(
             is SearchIntent.LoadSuraNames -> loadInitialData()
             is SearchIntent.RefreshData -> loadInitialData()
             is SearchIntent.SaveBookmark -> saveBookmark(intent.lastRead)
+            is SearchIntent.SaveTheme -> saveTheme(intent.isDark)
+
         }
     }
 
@@ -238,6 +241,21 @@ class SearchViewModel(
             }
         }
     }
+
+    fun getTheme() {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.readSettingAsFlow("theme").collect { theme ->
+                _state.update { it.copy(isDarkMode = theme.toBoolean()) }
+            }
+        }
+    }
+
+    fun saveTheme(isDark: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting("theme", isDark.toString())
+        }
+    }
+
 
     fun saveFontSize(fontSize: Float) {
         viewModelScope.launch(Dispatchers.IO) {

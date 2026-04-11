@@ -5,6 +5,7 @@ import com.braveboy.mos_haf.domain.model.Quran
 
 data class QuranDetailState(
     val isFromLast: Boolean = false,
+    val isDarkMode: Boolean = false,
     val lastRead: LastReadModel? = null,
     val verses: List<Quran> = emptyList(),
     val suraNames: List<String> = emptyList(),
