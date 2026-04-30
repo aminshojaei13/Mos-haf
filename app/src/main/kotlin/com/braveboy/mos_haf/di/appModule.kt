@@ -7,11 +7,17 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.braveboy.mos_haf.presentation.feature.search.SearchViewModel
 import com.braveboy.mos_haf.data.local.database.AppDatabase
 import com.braveboy.mos_haf.data.local.datasource.LocalDataSource
+import com.braveboy.mos_haf.data.repository.KhatmRepository
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.data.repository.QuranRepository
+import com.braveboy.mos_haf.domain.usecase.GetAllKhatmQuranUseCase
+import com.braveboy.mos_haf.domain.usecase.GetKhatmQuranUseCase
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
+import com.braveboy.mos_haf.domain.usecase.InsertKhatmQuranUseCase
 import com.braveboy.mos_haf.presentation.feature.detail.QuranDetailViewModel
 import com.braveboy.mos_haf.presentation.feature.home.HomeViewModel
+import com.braveboy.mos_haf.presentation.feature.khatm.home.KhatmHomeViewModel
+import com.braveboy.mos_haf.presentation.feature.khatm.newkhatm.NewKhatmViewModel
 import com.braveboy.mos_haf.presentation.feature.suralist.SuraListViewModel
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModelOf
@@ -29,20 +35,27 @@ val appModule = module {
     
     // DAOs
     single { get<AppDatabase>().quranDao() }
+    single { get<AppDatabase>().khatmDao() }
 
     // DataSource
     singleOf(::LocalDataSource)
     
     // Repositories
     singleOf(::QuranRepository)
+    singleOf(::KhatmRepository)
     singleOf(::PreferencesRepository)
 
     // UseCases
     singleOf(::GetQuranVersesUseCase)
+    singleOf(::InsertKhatmQuranUseCase)
+    singleOf(::GetAllKhatmQuranUseCase)
+    singleOf(::GetKhatmQuranUseCase)
 
     // ViewModels
     viewModelOf(::SearchViewModel)
     viewModelOf(::SuraListViewModel)
     viewModelOf(::QuranDetailViewModel)
     viewModelOf(::HomeViewModel)
+    viewModelOf(::KhatmHomeViewModel)
+    viewModelOf(::NewKhatmViewModel)
 }

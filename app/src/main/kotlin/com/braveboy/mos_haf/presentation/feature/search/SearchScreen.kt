@@ -649,6 +649,7 @@ fun JozOrHezbDropdown(
                     width = 1.dp,
                     shape = MaterialTheme.shapes.small
                 )
+                .fillMaxWidth()
                 .safeClickable { expanded = !expanded },
             colors = TextFieldDefaults.colors().copy(
                 focusedIndicatorColor = Color.Transparent,

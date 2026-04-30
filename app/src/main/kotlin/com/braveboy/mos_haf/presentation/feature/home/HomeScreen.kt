@@ -159,6 +159,10 @@ fun HomeScreen(
                         navController.navigate(Screen.Search(false))
                     }
 
+                    Tile.KHATM -> {
+                        navController.navigate(Screen.KhatmHome.route)
+                    }
+
                     Tile.VOICE -> {
 
                     }
@@ -169,7 +173,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.weight(1F))
 
             Text(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
                 text = "نسخه : " + BuildConfig.VERSION_NAME,
                 textAlign = TextAlign.Center
             )
@@ -332,16 +336,20 @@ fun PopularSection(
                 title = stringResource(R.string.label_search),
                 imageRes = R.drawable.ic_khatm_quran,
             )
+        }
 
-            /*PopularCard(
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            PopularCard(
                 modifier = Modifier
                     .weight(1f)
-                    .safecli {
-                        onClick(Tile.VOICE)
+                    .safeClickable {
+                        onClick(Tile.KHATM)
                     },
-                title = stringResource(R.string.label_quran_voice),
-                imageRes = R.drawable.ic_listening
-            )*/
+                title = stringResource(R.string.label_khatm_quran),
+                imageRes = R.drawable.ic_quran,
+            )
         }
     }
 }
@@ -389,6 +397,7 @@ enum class Tile {
     QURAN,
     Search,
     VOICE,
+    KHATM
 }
 
 @Preview(showBackground = true)

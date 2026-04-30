@@ -1,6 +1,7 @@
 package com.braveboy.mos_haf.data.local.datasource
 
 import com.braveboy.mos_haf.data.local.database.AppDatabase
+import com.braveboy.mos_haf.data.local.entity.KhatmEntity
 import com.braveboy.mos_haf.data.local.entity.QuranCleanTextEntity
 import com.braveboy.mos_haf.data.local.entity.QuranEntity
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +22,8 @@ class LocalDataSource(private val database: AppDatabase) {
     fun getVersesBySura(suraNumber: Int): Flow<List<QuranEntity>> =
         database.quranDao().getVersesBySura(suraNumber)
 
-    fun getVersesBySura(suraName: String): List<QuranEntity> = database.quranDao().getVersesBySura(suraName)
+    fun getVersesBySura(suraName: String): List<QuranEntity> =
+        database.quranDao().getVersesBySura(suraName)
 
     fun getVersesByPage(pageNumber: Int): Flow<List<QuranEntity>> =
         database.quranDao().getVersesByPage(pageNumber)
@@ -31,7 +33,8 @@ class LocalDataSource(private val database: AppDatabase) {
         startAya: Int,
         endSura: Int,
         endAya: Int
-    ): List<QuranEntity> = database.quranDao().getVersesByDetailedRange(startSura, startAya, endSura, endAya)
+    ): List<QuranEntity> =
+        database.quranDao().getVersesByDetailedRange(startSura, startAya, endSura, endAya)
 
     fun getAllQuranCleanText(): Flow<List<QuranCleanTextEntity>> =
         database.quranDao().getAllQuranCleanText()
@@ -44,14 +47,29 @@ class LocalDataSource(private val database: AppDatabase) {
 
     fun getAyaCounts(): List<Int> = database.quranDao().getAyaCounts()
 
-    fun getSuraTranslate(suraNumber: Int): List<String> = database.quranDao().getSuraTranslate(suraNumber)
+    fun getSuraTranslate(suraNumber: Int): List<String> =
+        database.quranDao().getSuraTranslate(suraNumber)
 
-    fun getByTranslateRange(startSura: Int, startAya: Int, endSura: Int, endAya: Int): List<String> =
-        database.quranDao().getByTranslateRange(startSura,startAya,endSura,endAya)
+    fun getByTranslateRange(
+        startSura: Int,
+        startAya: Int,
+        endSura: Int,
+        endAya: Int
+    ): List<String> =
+        database.quranDao().getByTranslateRange(startSura, startAya, endSura, endAya)
 
     fun getByJozAndHezb(
         joz: Int,
         hezb: Int,
     ): List<QuranEntity> =
-        database.quranDao().getByJozAndHezb(joz,hezb)
+        database.quranDao().getByJozAndHezb(joz, hezb)
+
+    fun insertKhatmQuran(khatm: KhatmEntity) =
+        database.khatmDao().insertKhatmQuran(khatm)
+
+    fun getAllKhatmQuran(): List<KhatmEntity> =
+        database.khatmDao().getAllKhatmQuran()
+
+    fun getKhatmQuran(id: Int) =
+        database.khatmDao().getKhatmQuran(id)
 }

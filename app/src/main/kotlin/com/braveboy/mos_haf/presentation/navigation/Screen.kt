@@ -8,6 +8,12 @@ sealed class Screen(val route: String) {
     object Home : Screen("home_screen")
 
     @Serializable
+    object KhatmHome : Screen("khatm_home_screen")
+
+    @Serializable
+    object NewKhatm : Screen("new_khatm_screen")
+
+    @Serializable
     data class Search(val fromLast: Boolean) : Screen("search_screen")
 
     @Serializable

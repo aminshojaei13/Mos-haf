@@ -1,4 +1,4 @@
-package com.braveboy.mos_haf.data.local.database
+package com.braveboy.mos_haf.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -6,7 +6,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.braveboy.mos_haf.data.local.entity.QuranCleanTextEntity
 import com.braveboy.mos_haf.data.local.entity.QuranEntity
-import com.braveboy.mos_haf.domain.model.Quran
 import kotlinx.coroutines.flow.Flow
 
 @Dao
