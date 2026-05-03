@@ -1,25 +1,35 @@
-package com.braveboy.mos_haf.presentation.feature.khatm.newkhatm
+package com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.braveboy.mos_haf.data.local.entity.KhatmEntity
+import androidx.navigation.toRoute
+import com.braveboy.mos_haf.domain.usecase.GetKhatmQuranUseCase
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
-import com.braveboy.mos_haf.domain.usecase.InsertKhatmQuranUseCase
 import com.braveboy.mos_haf.presentation.feature.search.PERSIAN_CHARACTERS
+import com.braveboy.mos_haf.presentation.navigation.Screen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class NewKhatmViewModel(
+class KhatmDetailViewModel(
+    savedStateHandle: SavedStateHandle,
     private val getQuranVersesUseCase: GetQuranVersesUseCase,
-    private val insertKhatmQuranUseCase: InsertKhatmQuranUseCase,
+    private val getKhatmQuranUseCase: GetKhatmQuranUseCase
 ) : ViewModel() {
-    private val _state = MutableStateFlow(NewKhatmState())
-    val state: StateFlow<NewKhatmState> = _state
+    private val _state = MutableStateFlow(KhatmDetailState())
+    val state: StateFlow<KhatmDetailState> = _state
 
     init {
+        savedStateHandle.toRoute<Screen.KhatmDetail>().let { detail ->
+            _state.update { it.copy(khatmId = detail.khatmId) }
+            viewModelScope.launch(Dispatchers.IO) {
+                val khatm = getKhatmQuranUseCase.getKhatmById(detail.khatmId)
+                _state.update { it.copy(khatmDetail = khatm) }
+            }
+        }
         loadInitialData()
     }
 
@@ -44,11 +54,4 @@ class NewKhatmViewModel(
             }
         }
     }
-
-    fun createNewKhatm(khatm: KhatmEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            insertKhatmQuranUseCase.insertKhatmQuran(khatm)
-        }
-    }
-
 }

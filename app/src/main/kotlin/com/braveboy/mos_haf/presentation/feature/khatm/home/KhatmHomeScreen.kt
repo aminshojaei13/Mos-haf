@@ -1,5 +1,6 @@
 package com.braveboy.mos_haf.presentation.feature.khatm.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +15,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -27,24 +30,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -53,7 +52,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.components.safeClickable
-import com.braveboy.mos_haf.presentation.feature.khatm.newkhatm.KhatmType
+import com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail.KhatmType
+import com.braveboy.mos_haf.presentation.navigation.Screen
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,14 +116,44 @@ fun KhatmHomeScreen(navController: NavController) {
                                     shape = MaterialTheme.shapes.small,
                                     color = MaterialTheme.colorScheme.primary,
                                 )
+                                .safeClickable {
+                                    navController.navigate(Screen.KhatmDetail(item.id))
+                                }
                         ) {
-                            Text(
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(top = 16.dp , bottom = 8.dp),
-                                text = item.name,
-                                textAlign = TextAlign.Center
-                            )
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .fillMaxWidth()
+                                        .padding(top = 16.dp, bottom = 8.dp),
+                                    text = item.name,
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Text(
+                                    modifier = Modifier
+                                        .padding(horizontal = 8.dp)
+                                        .align(Alignment.CenterEnd)
+                                        .border(
+                                            width = 1.dp,
+                                            color = MaterialTheme.colorScheme.tertiary,
+                                            shape = MaterialTheme.shapes.large
+                                        )
+                                        .padding(all = 4.dp),
+                                    text = when (item.type) {
+                                        KhatmType.JOZ.name -> stringResource(R.string.label_raed_joz)
+                                        KhatmType.HEZB.name -> stringResource(R.string.label_raed_hezb)
+                                        KhatmType.PAGE.name -> stringResource(R.string.label_raed_page)
+                                        else -> ""
+                                    },
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.labelSmall
+                                )
+
+                            }
                             LinearProgressIndicator(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -168,6 +198,7 @@ fun KhatmHomeScreen(navController: NavController) {
     }
 }
 
+@SuppressLint("UnusedContentLambdaTargetStateParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewKhatmModalBottomSheet(
@@ -175,7 +206,9 @@ fun NewKhatmModalBottomSheet(
     onDismissRequest: () -> Unit,
     onConfirmButton: (KhatmHomeIntent.NewKhatm) -> Unit
 ) {
-    val bottomSheet = rememberStandardBottomSheetState(skipHiddenState = false)
+    val bottomSheet = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     var khatmName by remember { mutableStateOf("") }
     var selectedKhatmType by remember { mutableStateOf(KhatmType.JOZ) }
 
@@ -187,32 +220,19 @@ fun NewKhatmModalBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            TextField(
+            OutlinedTextField(
                 value = khatmName,
                 onValueChange = { khatmName = it },
                 label = { Text("عنوان ختم") },
-                readOnly = false,
+                maxLines = 1,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-                    .clip(MaterialTheme.shapes.small)
-                    .border(
-                        color = MaterialTheme.colorScheme.primary,
-                        width = 1.dp,
-                        shape = MaterialTheme.shapes.small
-                    )
                     .safeClickable { },
-                colors = TextFieldDefaults.colors().copy(
-                    focusedIndicatorColor = Color.Transparent,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    disabledIndicatorColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent
-                ),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
             )
 
@@ -236,10 +256,11 @@ fun NewKhatmModalBottomSheet(
 
                 Text(
                     modifier = Modifier.padding(vertical = 8.dp),
-                    text = "جز خوانی",
+                    text = stringResource(R.string.label_raed_joz),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+
             Row(
                 modifier = Modifier.safeClickable { selectedKhatmType = KhatmType.HEZB },
                 verticalAlignment = Alignment.CenterVertically,
@@ -254,10 +275,11 @@ fun NewKhatmModalBottomSheet(
 
                 Text(
                     modifier = Modifier.padding(vertical = 8.dp),
-                    text = "حزب خوانی",
+                    text = stringResource(R.string.label_raed_hezb),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+
             Row(
                 modifier = Modifier.safeClickable { selectedKhatmType = KhatmType.PAGE },
                 verticalAlignment = Alignment.CenterVertically,
@@ -272,30 +294,12 @@ fun NewKhatmModalBottomSheet(
 
                 Text(
                     modifier = Modifier.padding(vertical = 8.dp),
-                    text = "صفحه خوانی",
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-            Row(
-                modifier = Modifier.safeClickable { selectedKhatmType = KhatmType.RANGE },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                RadioButton(
-                    selected = selectedKhatmType == KhatmType.RANGE,
-                    onClick = {
-                        selectedKhatmType = KhatmType.RANGE
-                    }
-                )
-
-                Text(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    text = "بازه خوانی",
+                    text = stringResource(R.string.label_raed_page),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.weight(1F))
 
             Button(
                 modifier = Modifier
@@ -308,7 +312,6 @@ fun NewKhatmModalBottomSheet(
                         KhatmHomeIntent.NewKhatm(
                             name = khatmName,
                             type = selectedKhatmType.name,
-                            pages = 0
                         )
                     )
                 },

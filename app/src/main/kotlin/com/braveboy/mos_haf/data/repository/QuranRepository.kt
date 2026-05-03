@@ -83,6 +83,27 @@ class QuranRepository(private val localDataSource: LocalDataSource) {
             it.toDomain()
         }
 
+    fun getByJoz(
+        joz: Int,
+    ): List<Quran> =
+        localDataSource.getByJoz(joz).map {
+            it.toDomain()
+        }
+
+    fun getByHezb(
+        hezb: Int,
+    ): List<Quran> =
+        localDataSource.getByHezb(hezb).map {
+            it.toDomain()
+        }
+
+    fun getByPage(
+        page: Int,
+    ): List<Quran> =
+        localDataSource.getByPage(page).map {
+            it.toDomain()
+        }
+
     private fun QuranEntity.toDomain(): Quran = Quran(
         id = id,
         sura = sura,

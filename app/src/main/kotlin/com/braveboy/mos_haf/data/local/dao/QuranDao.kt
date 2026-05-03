@@ -72,4 +72,31 @@ interface QuranDao {
         joz: Int,
         hezb: Int,
     ): List<QuranEntity>
+
+    @Query("""
+        SELECT * FROM quran_text 
+        WHERE juz = :joz
+        ORDER BY `index`
+    """)
+    fun getByJoz(
+        joz: Int,
+    ): List<QuranEntity>
+
+    @Query("""
+        SELECT * FROM quran_text 
+        WHERE hezb = :hezb
+        ORDER BY `index`
+    """)
+    fun getByHezb(
+        hezb: Int,
+    ): List<QuranEntity>
+
+    @Query("""
+        SELECT * FROM quran_text 
+        WHERE page = :page
+        ORDER BY `index`
+    """)
+    fun getByPage(
+        page: Int,
+    ): List<QuranEntity>
 }

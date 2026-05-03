@@ -9,7 +9,6 @@ data class KhatmEntity(
     val id: Int = 0,
     val name: String,
     val type: String,
-    val pagesPerDay: Int,
     val completedPages: Int,
     val startDate: Long,
     val lastReadDate: Long?,

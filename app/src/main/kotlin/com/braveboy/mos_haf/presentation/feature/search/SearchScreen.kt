@@ -214,7 +214,9 @@ fun QuranContent(
 
             state.verses.isNotEmpty() -> {
                 AyatComponent(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(top = 16.dp),
                     verses = state.verses,
                     translations = state.translations,
                     fontSize = fontSize ?: 28.sp,

@@ -18,5 +18,8 @@
     <string name="label_suras_list">لیست سوره‌ها</string>
     <string name="label_sura">سوره‌</string>
     <string name="label_khatm">ختم قرآن</string>
-    <string name="label_new_khatm">ختم جدید</string>
+    <string name="label_khatm_detail">جزئیات ختم</string>
+    <string name="label_raed_joz">جز خوانی</string>
+    <string name="label_raed_hezb">حزب خوانی</string>
+    <string name="label_raed_page">صفحه خوانی</string>
 </resources>

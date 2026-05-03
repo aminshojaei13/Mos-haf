@@ -64,6 +64,21 @@ class LocalDataSource(private val database: AppDatabase) {
     ): List<QuranEntity> =
         database.quranDao().getByJozAndHezb(joz, hezb)
 
+    fun getByJoz(
+        joz: Int,
+    ): List<QuranEntity> =
+        database.quranDao().getByJoz(joz)
+
+    fun getByHezb(
+        hezb: Int,
+    ): List<QuranEntity> =
+        database.quranDao().getByHezb(hezb)
+
+    fun getByPage(
+        page: Int,
+    ): List<QuranEntity> =
+        database.quranDao().getByPage(page)
+
     fun insertKhatmQuran(khatm: KhatmEntity) =
         database.khatmDao().insertKhatmQuran(khatm)
 

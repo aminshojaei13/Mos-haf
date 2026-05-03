@@ -24,5 +24,5 @@ interface KhatmDao {
     suspend fun deleteKhatmQuran(khatm: KhatmEntity)
 
     @Query("SELECT * FROM khatm_quran WHERE id = :id")
-    fun getKhatmQuran(id: Int): List<KhatmEntity>
+    fun getKhatmQuran(id: Int): KhatmEntity
 }

@@ -38,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -61,7 +60,9 @@ fun AyatComponent(
     suras: List<String>? = null,
     overScrollEnable: Boolean = false,
     bookmarked: (Quran) -> Unit = {},
-    changeSura: (String) -> Unit = {}
+    changeSura: (String) -> Unit = {},
+    forwardItem: @Composable () -> Unit = {},
+    backwardItem: @Composable () -> Unit = {}
 ) {
     var showOtherSura by remember { mutableIntStateOf(0) }
     var bookmarkedAya by remember { mutableStateOf(false) }
@@ -97,9 +98,12 @@ fun AyatComponent(
         }
     }
 
+    LaunchedEffect(verses) {
+        lazyState.animateScrollToItem(0)
+    }
+
     Box(
         modifier = modifier
-            .padding(vertical = 16.dp)
             .border(
                 width = 1.dp,
                 shape = RoundedCornerShape(topStartPercent = 8, topEndPercent = 8),
@@ -148,28 +152,32 @@ fun AyatComponent(
                                 Icon(
                                     imageVector = Icons.Outlined.ArrowCircleUp,
                                     contentDescription = "",
-                                    tint = Color.Yellow
+                                    tint = MaterialTheme.colorScheme.onTertiary
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
                                     text = suras[it - 1],
-                                    color = Color.Yellow
+                                    color = MaterialTheme.colorScheme.onTertiary
                                 )
                             }
                         }
                     }
                 }
+
+                AnimatedVisibility(
+                    visible = showOtherSura != 0 && showOtherSura != 2 && suras.isNullOrEmpty(),
+                    enter = slideInVertically()
+                ) {
+                    backwardItem()
+                }
             }
 
             itemsIndexed(verses) { index, verse ->
                 if (verse.aya == 1 || index == 0) {
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.Bottom
-                    ) {
+                    Box(Modifier.fillMaxWidth()) {
                         Text(
                             text = verse.suraName.orEmpty(),
-                            modifier = Modifier.weight(.3f),
+                            modifier = Modifier.align(Alignment.BottomStart),
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onBackground
@@ -178,8 +186,9 @@ fun AyatComponent(
                         if (verse.suraName != "التوبة") {
                             Text(
                                 text = stringResource(R.string.label_bismillah),
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.align(Alignment.TopCenter).padding(bottom = 16.dp),
                                 textAlign = TextAlign.Center,
+                                fontSize = fontSize,
                                 style = MaterialTheme.typography.headlineMedium,
                                 color = MaterialTheme.colorScheme.primary
                             )
@@ -187,7 +196,7 @@ fun AyatComponent(
 
                         Text(
                             text = "جز " + verses.first().juz.toString().toPersianNumber(),
-                            modifier = Modifier.weight(.3f),
+                            modifier = Modifier.align(Alignment.BottomEnd),
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onBackground
@@ -225,16 +234,23 @@ fun AyatComponent(
                                 Icon(
                                     imageVector = Icons.Outlined.ArrowCircleDown,
                                     contentDescription = "",
-                                    tint = Color.Yellow
+                                    tint = MaterialTheme.colorScheme.onTertiary
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 Text(
                                     text = suras[it + 1],
-                                    color = Color.Yellow
+                                    color = MaterialTheme.colorScheme.onTertiary
                                 )
                             }
                         }
                     }
+                }
+
+                AnimatedVisibility(
+                    visible = showOtherSura != 0 && showOtherSura != 1 && suras.isNullOrEmpty(),
+                    enter = slideInVertically()
+                ) {
+                    forwardItem()
                 }
             }
         }

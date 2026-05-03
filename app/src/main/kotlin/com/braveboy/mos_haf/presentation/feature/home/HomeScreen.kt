@@ -55,11 +55,16 @@ import com.braveboy.mos_haf.BuildConfig
 import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
+import com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail.KhatmType
+import com.braveboy.mos_haf.presentation.feature.khatm.model.KhatmVersesModel
 import com.braveboy.mos_haf.presentation.navigation.Screen
+import com.braveboy.mos_haf.presentation.navigation.Screen.KhatmVerses
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,15 +137,67 @@ fun HomeScreen(
                         ayaNumber = lastRead.start?.aya.toString().toPersianNumber()
                     ) {
                         state.let {
-                            if (it.source == "detail") {
-                                navController.navigate(
-                                    QuranDetail(
-                                        it.start?.suraName.orEmpty(),
-                                        true
+                            when (it.source) {
+                                "detail" -> {
+                                    navController.navigate(
+                                        QuranDetail(
+                                            it.start?.suraName.orEmpty(),
+                                            true
+                                        )
                                     )
-                                )
-                            } else {
-                                navController.navigate(Screen.Search(true))
+                                }
+
+                                "search" -> {
+                                    navController.navigate(Screen.Search(true))
+                                }
+
+                                else -> {
+                                    when (it.source) {
+                                        KhatmType.JOZ.name -> {
+                                            navController.navigate(
+                                                KhatmVerses(
+                                                    fromLast = true,
+                                                    khatm = Json.encodeToString(
+                                                        KhatmVersesModel(
+                                                            type = KhatmType.JOZ.name,
+                                                            joz = it.start?.juz
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        }
+
+                                        KhatmType.HEZB.name -> {
+                                            navController.navigate(
+                                                KhatmVerses(
+                                                    fromLast = true,
+                                                    khatm = Json.encodeToString(
+                                                        KhatmVersesModel(
+                                                            type = KhatmType.HEZB.name,
+                                                            hezb = it.start?.hezb
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        }
+
+                                        KhatmType.PAGE.name -> {
+                                            navController.navigate(
+                                                KhatmVerses(
+                                                    fromLast = true,
+                                                    khatm = Json.encodeToString(
+                                                        KhatmVersesModel(
+                                                            type = KhatmType.PAGE.name,
+                                                            page = it.start?.page
+                                                        )
+                                                    )
+                                                )
+                                            )
+                                        }
+
+                                        else -> {}
+                                    }
+                                }
                             }
                         }
                     }
@@ -173,7 +230,9 @@ fun HomeScreen(
             Spacer(modifier = Modifier.weight(1F))
 
             Text(
-                modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
                 text = "نسخه : " + BuildConfig.VERSION_NAME,
                 textAlign = TextAlign.Center
             )
@@ -334,7 +393,7 @@ fun PopularSection(
                         onClick(Tile.Search)
                     },
                 title = stringResource(R.string.label_search),
-                imageRes = R.drawable.ic_khatm_quran,
+                imageRes = R.drawable.ic_mos_haf_search,
             )
         }
 
@@ -348,7 +407,7 @@ fun PopularSection(
                         onClick(Tile.KHATM)
                     },
                 title = stringResource(R.string.label_khatm_quran),
-                imageRes = R.drawable.ic_quran,
+                imageRes = R.drawable.ic_mos_haf_khatm,
             )
         }
     }
