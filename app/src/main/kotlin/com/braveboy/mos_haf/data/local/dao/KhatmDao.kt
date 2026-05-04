@@ -18,7 +18,7 @@ interface KhatmDao {
     fun getAllKhatmQuran(): List<KhatmEntity>
 
     @Update
-    suspend fun updateKhatmQuran(khatm: KhatmEntity)
+    fun updateKhatmQuran(khatm: KhatmEntity)
 
     @Delete
     suspend fun deleteKhatmQuran(khatm: KhatmEntity)

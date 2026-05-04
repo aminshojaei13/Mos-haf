@@ -16,7 +16,7 @@ class HomeViewModel(
     private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(LastReadModel(null, null, null))
+    private val _state = MutableStateFlow(LastReadModel(null, null,null, null))
     val state: StateFlow<LastReadModel> = _state.asStateFlow()
 
     private val _theme = MutableStateFlow(false)

@@ -194,6 +194,7 @@ fun KhatmVersesScreen(
                 bookmarked = {
                     viewModel.saveBookmark(
                         LastReadModel(
+                            id = state.khatmDetail?.id,
                             source = state.khatm?.type,
                             start = it,
                             end = state.verses.last()
@@ -243,6 +244,7 @@ fun KhatmVersesScreen(
                     }
                 },
                 forwardItem = {
+                    viewModel.handleIntent(KhatmVersesIntent.SaveCompleteReadPage)
                     if (
                         state.khatm?.joz != null && state.khatm?.joz!! < 30 ||
                         state.khatm?.hezb != null && state.khatm?.hezb!! < 120 ||

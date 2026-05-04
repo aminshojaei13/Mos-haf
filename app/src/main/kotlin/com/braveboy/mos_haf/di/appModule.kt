@@ -16,6 +16,7 @@ import com.braveboy.mos_haf.domain.usecase.GetVerseByHezbUseCase
 import com.braveboy.mos_haf.domain.usecase.GetVerseByJozUseCase
 import com.braveboy.mos_haf.domain.usecase.GetVerseByPageUseCase
 import com.braveboy.mos_haf.domain.usecase.InsertKhatmQuranUseCase
+import com.braveboy.mos_haf.domain.usecase.UpdateKhatmQuranUseCase
 import com.braveboy.mos_haf.presentation.feature.detail.QuranDetailViewModel
 import com.braveboy.mos_haf.presentation.feature.home.HomeViewModel
 import com.braveboy.mos_haf.presentation.feature.khatm.home.KhatmHomeViewModel
@@ -57,6 +58,7 @@ val appModule = module {
     singleOf(::GetVerseByJozUseCase)
     singleOf(::GetVerseByHezbUseCase)
     singleOf(::GetVerseByPageUseCase)
+    singleOf(::UpdateKhatmQuranUseCase)
 
     // ViewModels
     viewModelOf(::SearchViewModel)

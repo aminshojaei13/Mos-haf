@@ -159,6 +159,7 @@ fun HomeScreen(
                                                     fromLast = true,
                                                     khatm = Json.encodeToString(
                                                         KhatmVersesModel(
+                                                            id = it.id,
                                                             type = KhatmType.JOZ.name,
                                                             joz = it.start?.juz
                                                         )
@@ -173,6 +174,7 @@ fun HomeScreen(
                                                     fromLast = true,
                                                     khatm = Json.encodeToString(
                                                         KhatmVersesModel(
+                                                            id = it.id,
                                                             type = KhatmType.HEZB.name,
                                                             hezb = it.start?.hezb
                                                         )
@@ -187,6 +189,7 @@ fun HomeScreen(
                                                     fromLast = true,
                                                     khatm = Json.encodeToString(
                                                         KhatmVersesModel(
+                                                            id = it.id,
                                                             type = KhatmType.PAGE.name,
                                                             page = it.start?.page
                                                         )

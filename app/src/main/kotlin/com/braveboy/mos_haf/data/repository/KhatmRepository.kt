@@ -8,6 +8,10 @@ class KhatmRepository(private val localDataSource: LocalDataSource) {
         localDataSource.insertKhatmQuran(khatm)
     }
 
+    fun updateKhatmQuran(khatm: KhatmEntity) {
+        localDataSource.updateKhatmQuran(khatm)
+    }
+
     fun getAllKhatmQuran(): List<KhatmEntity> =
         localDataSource.getAllKhatmQuran()
 

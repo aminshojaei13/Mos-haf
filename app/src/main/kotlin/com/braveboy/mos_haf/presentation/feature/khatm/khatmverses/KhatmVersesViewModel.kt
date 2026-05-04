@@ -7,12 +7,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.braveboy.mos_haf.AppConstants.BOOKMARK
 import com.braveboy.mos_haf.AppConstants.FONT_SIZE
+import com.braveboy.mos_haf.data.local.entity.KhatmEntity
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.domain.model.LastReadModel
+import com.braveboy.mos_haf.domain.usecase.GetKhatmQuranUseCase
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
 import com.braveboy.mos_haf.domain.usecase.GetVerseByHezbUseCase
 import com.braveboy.mos_haf.domain.usecase.GetVerseByJozUseCase
 import com.braveboy.mos_haf.domain.usecase.GetVerseByPageUseCase
+import com.braveboy.mos_haf.domain.usecase.UpdateKhatmQuranUseCase
 import com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail.KhatmType
 import com.braveboy.mos_haf.presentation.feature.khatm.model.KhatmVersesModel
 import com.braveboy.mos_haf.presentation.navigation.Screen
@@ -31,7 +34,9 @@ class KhatmVersesViewModel(
     private val getVerseByPageUseCase: GetVerseByPageUseCase,
     private val getVerseByJozUseCase: GetVerseByJozUseCase,
     private val getVerseByHezbUseCase: GetVerseByHezbUseCase,
-    private val preferencesRepository: PreferencesRepository
+    private val preferencesRepository: PreferencesRepository,
+    private val updateKhatmQuranUseCase: UpdateKhatmQuranUseCase,
+    private val getKhatmQuranUseCase: GetKhatmQuranUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(KhatmVersesState())
@@ -44,12 +49,18 @@ class KhatmVersesViewModel(
             savedStateHandle.toRoute<Screen.KhatmVerses>().let { detail ->
                 Json.decodeFromString<KhatmVersesModel>(detail.khatm).let { detailKhatm ->
                     if (detail.fromLast) {
+                        Log.d("xavi", "updateReadPageKhatm: ${detailKhatm.id}")
                         loadVerseByType(detailKhatm)
                     } else {
                         _state.update { it.copy(khatm = detailKhatm) }
                         loadVerseByType(detailKhatm)
                     }
                 }
+            }
+            state.value.khatm?.id?.let {
+                Log.d("xavi", "updateReadPageKhatm: ${it}")
+                val khatm = getKhatmQuranUseCase.getKhatmById(it)
+                _state.update { it.copy(khatmDetail = khatm) }
             }
         }
     }
@@ -86,6 +97,8 @@ class KhatmVersesViewModel(
                     }
                 }
             }
+
+            KhatmVersesIntent.SaveCompleteReadPage -> updateReadPageKhatm()
         }
     }
 
@@ -266,6 +279,32 @@ class KhatmVersesViewModel(
                     verses = verses,
                     translations = translations,
                     isLoading = false
+                )
+            }
+        }
+    }
+
+    private fun updateReadPageKhatm() {
+        viewModelScope.launch(Dispatchers.IO) {
+            Log.d("xavi", "updateReadPageKhatm: ${state.value.khatmDetail}")
+            state.value.khatmDetail?.let {
+                updateKhatmQuranUseCase.updateKhatmQuran(
+                    KhatmEntity(
+                        id = it.id,
+                        name = it.name,
+                        type = it.type,
+                        completedPages = if (
+                            state.value.khatmDetail?.completedPages != null &&
+                            state.value.khatmDetail?.completedPages!! > state.value.verses.last().page
+                        ) {
+                            state.value.khatmDetail?.completedPages!!
+                        } else {
+                            state.value.verses.last().page
+                        },
+                        startDate = it.startDate,
+                        lastReadDate = System.currentTimeMillis(),
+                        isActive = state.value.verses.last().page != 604
+                    )
                 )
             }
         }

@@ -36,11 +36,11 @@ class KhatmDetailViewModel(
     private fun loadInitialData() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val suraNames = getQuranVersesUseCase.getAllSura()
+                val suraNames = getQuranVersesUseCase.getAllSuraWithDetail()
                 val ayaCounts = getQuranVersesUseCase.getAyaCounts()
                 _state.update { quranState ->
                     suraNames.forEach { sura ->
-                        sura.filter {
+                        sura.suraName?.filter {
                             PERSIAN_CHARACTERS.matches(it.toString())
                         }
                     }

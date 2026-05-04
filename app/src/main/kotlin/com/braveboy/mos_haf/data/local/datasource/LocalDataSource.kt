@@ -87,4 +87,7 @@ class LocalDataSource(private val database: AppDatabase) {
 
     fun getKhatmQuran(id: Int) =
         database.khatmDao().getKhatmQuran(id)
+
+    fun updateKhatmQuran(khatm: KhatmEntity) =
+        database.khatmDao().updateKhatmQuran(khatm)
 }

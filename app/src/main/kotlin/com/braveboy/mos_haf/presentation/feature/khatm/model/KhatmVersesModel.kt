@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class KhatmVersesModel(
+    val id: Int? = null,
     val type: String,
     val joz: Int? = null,
     val hezb: Int? = null,

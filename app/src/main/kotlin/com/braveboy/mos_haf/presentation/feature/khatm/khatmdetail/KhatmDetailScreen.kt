@@ -1,5 +1,7 @@
 package com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail
 
+import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,8 +21,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -67,6 +72,26 @@ fun KhatmDetailScreen(navController: NavController) {
 
         val lazyState = rememberLazyListState()
 
+        LaunchedEffect(state.value.suraNames) {
+            val index = if (state.value.khatmDetail?.type == KhatmType.HEZB.name) {
+                state.value.suraNames.lastOrNull { quran ->
+                    quran.page == state.value.khatmDetail?.completedPages
+                }?.hezb ?: 0
+            } else if (state.value.khatmDetail?.type == KhatmType.JOZ.name) {
+                state.value.suraNames.lastOrNull { quran ->
+                    quran.page == state.value.khatmDetail?.completedPages
+                }?.juz ?: 0
+            } else {
+                state.value.suraNames.lastOrNull { quran ->
+                    quran.page == state.value.khatmDetail?.completedPages
+                }?.page ?: 0
+            }
+
+            lazyState.animateScrollToItem(
+                index
+            )
+        }
+
         state.value.khatmDetail?.let { khatmDetail ->
             LazyColumn(
                 modifier = Modifier
@@ -93,6 +118,7 @@ fun KhatmDetailScreen(navController: NavController) {
                                     .safeClickable {
                                         val khatm = Json.encodeToString(
                                             KhatmVersesModel(
+                                                id = state.value.khatmDetail?.id,
                                                 type = KhatmType.JOZ.name,
                                                 joz = it + 1
                                             )
@@ -116,19 +142,33 @@ fun KhatmDetailScreen(navController: NavController) {
                             val joz = (it / 4) + 1
                             val hezb = (it % 4) + 1
 
+                            Log.d(
+                                "xavi",
+                                "KhatmDetailScreen22: ${state.value.suraNames.firstOrNull { quran -> quran.hezb == it }?.page}"
+                            )
+
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 16.dp)
+                                    .clip(MaterialTheme.shapes.small)
                                     .border(
                                         width = 1.dp,
                                         color = MaterialTheme.colorScheme.secondary,
                                         shape = MaterialTheme.shapes.small
                                     )
+                                    .background(
+                                        color = if (state.value.khatmDetail!!.completedPages > (state.value.suraNames.firstOrNull { quran -> quran.hezb == it }?.page
+                                                ?: 0)
+                                        )
+                                            Color.Gray.copy(alpha = 0.3f)
+                                        else Color.Transparent
+                                    )
                                     .padding(16.dp)
                                     .safeClickable {
                                         val khatm = Json.encodeToString(
                                             KhatmVersesModel(
+                                                id = state.value.khatmDetail?.id,
                                                 type = KhatmType.HEZB.name,
                                                 hezb = it + 1
                                             )
@@ -154,15 +194,22 @@ fun KhatmDetailScreen(navController: NavController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 16.dp)
+                                    .clip(MaterialTheme.shapes.small)
                                     .border(
                                         width = 1.dp,
                                         color = MaterialTheme.colorScheme.secondary,
                                         shape = MaterialTheme.shapes.small
                                     )
+                                    .background(
+                                        color = if (state.value.khatmDetail!!.completedPages > it)
+                                            Color.Gray.copy(alpha = 0.3f)
+                                        else Color.Transparent
+                                    )
                                     .padding(16.dp)
                                     .safeClickable {
                                         val khatm = Json.encodeToString(
                                             KhatmVersesModel(
+                                                id = state.value.khatmDetail?.id,
                                                 type = KhatmType.PAGE.name,
                                                 page = it + 1
                                             )
