@@ -49,7 +49,6 @@ class KhatmVersesViewModel(
             savedStateHandle.toRoute<Screen.KhatmVerses>().let { detail ->
                 Json.decodeFromString<KhatmVersesModel>(detail.khatm).let { detailKhatm ->
                     if (detail.fromLast) {
-                        Log.d("xavi", "updateReadPageKhatm: ${detailKhatm.id}")
                         loadVerseByType(detailKhatm)
                     } else {
                         _state.update { it.copy(khatm = detailKhatm) }
@@ -58,7 +57,6 @@ class KhatmVersesViewModel(
                 }
             }
             state.value.khatm?.id?.let {
-                Log.d("xavi", "updateReadPageKhatm: ${it}")
                 val khatm = getKhatmQuranUseCase.getKhatmById(it)
                 _state.update { it.copy(khatmDetail = khatm) }
             }
@@ -286,7 +284,6 @@ class KhatmVersesViewModel(
 
     private fun updateReadPageKhatm() {
         viewModelScope.launch(Dispatchers.IO) {
-            Log.d("xavi", "updateReadPageKhatm: ${state.value.khatmDetail}")
             state.value.khatmDetail?.let {
                 updateKhatmQuranUseCase.updateKhatmQuran(
                     KhatmEntity(

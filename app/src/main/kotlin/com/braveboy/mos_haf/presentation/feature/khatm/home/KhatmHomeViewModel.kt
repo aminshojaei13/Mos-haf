@@ -32,11 +32,9 @@ class KhatmHomeViewModel(
                     )
                 )
             }
-        }
-    }
 
-    init {
-        getAllKhatm()
+            KhatmHomeIntent.LoadKhatmDetail -> getAllKhatm()
+        }
     }
 
     private fun createNewKhatm(khatmEntity: KhatmEntity) {

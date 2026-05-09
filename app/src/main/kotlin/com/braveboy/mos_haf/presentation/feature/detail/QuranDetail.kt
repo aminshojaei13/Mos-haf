@@ -170,7 +170,7 @@ fun QuranDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface
@@ -325,6 +325,7 @@ fun String.toPersianWord(): String {
         'ن' to 'ن',
         'و' to 'و',
         'ه' to 'ه',
+        'ة' to 'ه',
         'ي' to 'ی',
         'ؤ' to 'ؤ',
         'ئ' to 'ئ',

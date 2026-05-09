@@ -61,7 +61,7 @@ fun KhatmDetailScreen(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface
@@ -69,23 +69,34 @@ fun KhatmDetailScreen(navController: NavController) {
             )
         }
     ) { paddingValues ->
-
         val lazyState = rememberLazyListState()
 
-        LaunchedEffect(state.value.suraNames) {
-            val index = if (state.value.khatmDetail?.type == KhatmType.HEZB.name) {
-                state.value.suraNames.lastOrNull { quran ->
-                    quran.page == state.value.khatmDetail?.completedPages
-                }?.hezb ?: 0
-            } else if (state.value.khatmDetail?.type == KhatmType.JOZ.name) {
-                state.value.suraNames.lastOrNull { quran ->
-                    quran.page == state.value.khatmDetail?.completedPages
-                }?.juz ?: 0
-            } else {
-                state.value.suraNames.lastOrNull { quran ->
-                    quran.page == state.value.khatmDetail?.completedPages
-                }?.page ?: 0
+        LaunchedEffect(true) {
+            Log.d("xavi", "KhatmDetailScreen: Load in screen")
+            viewModel.handleIntent(KhatmDetailIntent.LoadKhatmDetail)
+        }
+
+        LaunchedEffect(state.value.qurans, state.value.khatmDetail?.completedPages) {
+            val index = when (state.value.khatmDetail?.type) {
+                KhatmType.HEZB.name -> {
+                    state.value.qurans.lastOrNull { quran ->
+                        quran.page == state.value.khatmDetail?.completedPages
+                    }?.hezb ?: 0
+                }
+
+                KhatmType.JOZ.name -> {
+                    state.value.qurans.lastOrNull { quran ->
+                        quran.page == state.value.khatmDetail?.completedPages
+                    }?.juz ?: 0
+                }
+
+                else -> {
+                    state.value.qurans.lastOrNull { quran ->
+                        quran.page == state.value.khatmDetail?.completedPages
+                    }?.page ?: 0
+                }
             }
+            Log.d("xavi", "index: $index")
 
             lazyState.animateScrollToItem(
                 index
@@ -109,10 +120,18 @@ fun KhatmDetailScreen(navController: NavController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 16.dp)
+                                    .clip(MaterialTheme.shapes.small)
                                     .border(
                                         width = 1.dp,
                                         color = MaterialTheme.colorScheme.secondary,
                                         shape = MaterialTheme.shapes.small
+                                    )
+                                    .background(
+                                        color = if (state.value.khatmDetail!!.completedPages > (state.value.qurans.lastOrNull { quran -> quran.juz == it }?.page
+                                                ?: 0)
+                                        )
+                                            Color.Gray.copy(alpha = 0.3f)
+                                        else Color.Transparent
                                     )
                                     .padding(16.dp)
                                     .safeClickable {
@@ -142,11 +161,6 @@ fun KhatmDetailScreen(navController: NavController) {
                             val joz = (it / 4) + 1
                             val hezb = (it % 4) + 1
 
-                            Log.d(
-                                "xavi",
-                                "KhatmDetailScreen22: ${state.value.suraNames.firstOrNull { quran -> quran.hezb == it }?.page}"
-                            )
-
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -158,7 +172,7 @@ fun KhatmDetailScreen(navController: NavController) {
                                         shape = MaterialTheme.shapes.small
                                     )
                                     .background(
-                                        color = if (state.value.khatmDetail!!.completedPages > (state.value.suraNames.firstOrNull { quran -> quran.hezb == it }?.page
+                                        color = if (state.value.khatmDetail!!.completedPages > (state.value.qurans.firstOrNull { quran -> quran.hezb == it }?.page
                                                 ?: 0)
                                         )
                                             Color.Gray.copy(alpha = 0.3f)

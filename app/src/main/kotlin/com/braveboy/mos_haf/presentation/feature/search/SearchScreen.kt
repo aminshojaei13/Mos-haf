@@ -170,7 +170,7 @@ fun SearchScreen(navController: NavController) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface
@@ -502,6 +502,7 @@ fun SuraDropdown(
             onValueChange = { selectedSuraName = it },
             label = { Text(label) },
             readOnly = false,
+            maxLines = 1,
             trailingIcon = {
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -580,6 +581,7 @@ fun AyaDropdown(
             onValueChange = {},
             label = { Text(label) },
             readOnly = true,
+            maxLines = 1,
             trailingIcon = {
                 Icon(
                     Icons.Default.ArrowDropDown,
@@ -637,6 +639,7 @@ fun JozOrHezbDropdown(
             onValueChange = {},
             label = { Text(label) },
             readOnly = true,
+            maxLines = 1,
             trailingIcon = {
                 Icon(
                     Icons.Default.ArrowDropDown,

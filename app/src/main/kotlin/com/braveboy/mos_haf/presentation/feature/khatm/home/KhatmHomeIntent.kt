@@ -5,4 +5,6 @@ sealed class KhatmHomeIntent {
         val name: String,
         val type: String,
     ) : KhatmHomeIntent()
+
+    data object LoadKhatmDetail : KhatmHomeIntent()
 }

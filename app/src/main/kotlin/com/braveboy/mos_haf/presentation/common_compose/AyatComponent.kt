@@ -1,6 +1,7 @@
 package com.braveboy.mos_haf.presentation.common_compose
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.border
@@ -38,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
@@ -66,13 +68,19 @@ fun AyatComponent(
 ) {
     var showOtherSura by remember { mutableIntStateOf(0) }
     var bookmarkedAya by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(bookmarkedAya) {
         if (bookmarkedAya) {
-            val index =
-                lazyState.firstVisibleItemIndex + lazyState.layoutInfo.visibleItemsInfo.lastIndex
-            val verse = verses[index - 1]
-            bookmarked(verse)
+            if (lazyState.firstVisibleItemIndex + lazyState.layoutInfo.visibleItemsInfo.lastIndex > verses.lastIndex){
+                Toast.makeText(context, "شما همه آیات را خوانده‌اید", Toast.LENGTH_SHORT).show()
+                bookmarkedAya = false
+            } else {
+                val index =
+                    lazyState.firstVisibleItemIndex + lazyState.layoutInfo.visibleItemsInfo.lastIndex
+                val verse = verses[index - 1]
+                bookmarked(verse)
+            }
         }
     }
 
@@ -186,7 +194,9 @@ fun AyatComponent(
                         if (verse.suraName != "التوبة") {
                             Text(
                                 text = stringResource(R.string.label_bismillah),
-                                modifier = Modifier.align(Alignment.TopCenter).padding(bottom = 16.dp),
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(bottom = 16.dp),
                                 textAlign = TextAlign.Center,
                                 fontSize = fontSize,
                                 style = MaterialTheme.typography.headlineMedium,

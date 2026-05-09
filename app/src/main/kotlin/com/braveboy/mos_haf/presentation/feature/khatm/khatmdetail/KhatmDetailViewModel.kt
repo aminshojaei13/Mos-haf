@@ -1,5 +1,6 @@
 package com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -23,35 +24,49 @@ class KhatmDetailViewModel(
     val state: StateFlow<KhatmDetailState> = _state
 
     init {
-        savedStateHandle.toRoute<Screen.KhatmDetail>().let { detail ->
-            _state.update { it.copy(khatmId = detail.khatmId) }
-            viewModelScope.launch(Dispatchers.IO) {
-                val khatm = getKhatmQuranUseCase.getKhatmById(detail.khatmId)
-                _state.update { it.copy(khatmDetail = khatm) }
+        viewModelScope.launch(Dispatchers.IO) {
+            savedStateHandle.toRoute<Screen.KhatmDetail>().let { detail ->
+                _state.update { it.copy(khatmId = detail.khatmId) }
             }
+            loadInitialData()
+            //getKhatmDetail()
         }
-        loadInitialData()
+    }
+
+    fun handleIntent(intent: KhatmDetailIntent) {
+        when (intent) {
+            KhatmDetailIntent.LoadKhatmDetail -> getKhatmDetail()
+        }
     }
 
     private fun loadInitialData() {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val suraNames = getQuranVersesUseCase.getAllSuraWithDetail()
+                val suras = getQuranVersesUseCase.getAllSuraWithDetail()
                 val ayaCounts = getQuranVersesUseCase.getAyaCounts()
                 _state.update { quranState ->
-                    suraNames.forEach { sura ->
+                    suras.forEach { sura ->
                         sura.suraName?.filter {
                             PERSIAN_CHARACTERS.matches(it.toString())
                         }
                     }
                     quranState.copy(
-                        suraNames = suraNames,
+                        qurans = suras,
                         ayaCounts = ayaCounts
                     )
                 }
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message ?: "Error loading suras") }
             }
+        }
+    }
+
+    private fun getKhatmDetail() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val khatm = state.value.khatmId?.let { getKhatmQuranUseCase.getKhatmById(it) }
+            Log.d("xavi", "KhatmDetailScreen: $khatm")
+            _state.update { it.copy(khatmDetail = khatm) }
+
         }
     }
 }
