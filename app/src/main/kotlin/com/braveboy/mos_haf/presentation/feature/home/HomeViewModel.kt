@@ -43,7 +43,7 @@ class HomeViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             preferencesRepository.readSetting("bookmark")?.let { bookmark ->
                 val last = Json.decodeFromString<LastReadModel>(bookmark)
-                _state.update { it.copy(source = last.source, start = last.start, end = last.end) }
+                _state.update { it.copy(id = last.id, source = last.source, start = last.start, end = last.end) }
             }
         }
     }

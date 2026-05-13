@@ -467,7 +467,7 @@ enum class Tile {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    MoshafTheme {
+    MoshafTheme(false) {
         HomeScreen(rememberNavController())
     }
 }

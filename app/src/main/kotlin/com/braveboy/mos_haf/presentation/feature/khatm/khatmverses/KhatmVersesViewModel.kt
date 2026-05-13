@@ -49,6 +49,7 @@ class KhatmVersesViewModel(
             savedStateHandle.toRoute<Screen.KhatmVerses>().let { detail ->
                 Json.decodeFromString<KhatmVersesModel>(detail.khatm).let { detailKhatm ->
                     if (detail.fromLast) {
+                        getBookmark()
                         loadVerseByType(detailKhatm)
                     } else {
                         _state.update { it.copy(khatm = detailKhatm) }
@@ -96,7 +97,17 @@ class KhatmVersesViewModel(
                 }
             }
 
-            KhatmVersesIntent.SaveCompleteReadPage -> updateReadPageKhatm()
+            KhatmVersesIntent.SaveCompleteReadPage -> {
+                updateReadPageKhatm()
+                saveBookmark(
+                    LastReadModel(
+                        id = null,
+                        source = null,
+                        start = null,
+                        end = null
+                    )
+                )
+            }
         }
     }
 
@@ -303,6 +314,24 @@ class KhatmVersesViewModel(
                         isActive = state.value.verses.last().page != 604
                     )
                 )
+            }
+        }
+    }
+
+    private fun getBookmark() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val detail = preferencesRepository.readSetting("bookmark")
+            Json.decodeFromString<LastReadModel>(detail.orEmpty()).let { readModel ->
+                _state.update { quranDetailState ->
+                    quranDetailState.copy(lastRead = readModel)
+                }
+                state.value.lastRead?.let {
+                    if (it.start != null) {
+                        loadVersesAndTranslations(
+                            it.start.suraName.orEmpty()
+                        )
+                    }
+                }
             }
         }
     }

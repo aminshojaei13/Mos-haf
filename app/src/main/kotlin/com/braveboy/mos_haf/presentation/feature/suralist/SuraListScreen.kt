@@ -124,7 +124,7 @@ fun SuraListScreen(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun SuraListScreenPreview() {
-    MoshafTheme {
+    MoshafTheme(false) {
         SuraListScreen(rememberNavController())
     }
 }

@@ -4,17 +4,17 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.lifecycleScope
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.braveboy.mos_haf.data.local.database.AppDatabase
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.di.appModule
@@ -32,8 +32,9 @@ import org.koin.core.logger.Level
 class MainActivity : ComponentActivity() {
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+
         enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
         try {
             startKoin {
                 androidLogger(Level.ERROR)
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity() {
         } catch (e: Exception) {
             Log.d("xavi", "onCreate: $e")
         }
+        super.onCreate(savedInstanceState)
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -61,20 +63,17 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        enableEdgeToEdge()
         setContent {
             var isDark by remember { mutableStateOf(false) }
             val pref = koinInject<PreferencesRepository>()
-            lifecycleScope.launch(Dispatchers.IO) {
+
+            LaunchedEffect(isDark) {
                 pref.readSettingAsFlow("theme").collect {
-                    Log.d("toni", "onCreate: $it")
                     isDark = it.toBoolean()
                 }
             }
 
-            MoshafTheme(
-                darkTheme = isDark
-            ) {
+            MoshafTheme(isDark) {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {

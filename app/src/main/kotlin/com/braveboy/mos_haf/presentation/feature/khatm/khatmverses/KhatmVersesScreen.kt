@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.R
@@ -70,6 +71,7 @@ fun KhatmVersesScreen(
     var fontSize by remember { mutableStateOf(28.sp) }
     val lazyState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    var loading by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.fontSize) {
         sliderState.value = state.fontSize ?: sliderState.value
@@ -91,7 +93,9 @@ fun KhatmVersesScreen(
 
     LaunchedEffect(true) {
         if (state.lastRead?.start != null) {
+            loading = true
             lazyState.animateScrollToItem(state.lastRead?.start?.aya ?: 0)
+            loading = false
         }
     }
 
@@ -183,6 +187,13 @@ fun KhatmVersesScreen(
                 CircularProgressIndicator(modifier = Modifier.size(64.dp))
             }
         } else {
+            if (loading) {
+                Dialog(
+                    onDismissRequest = { },
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                }
+            }
             AyatComponent(
                 modifier = Modifier.padding(paddingValues),
                 verses = state.verses,
@@ -214,9 +225,15 @@ fun KhatmVersesScreen(
                                     viewModel.handleIntent(
                                         KhatmVersesIntent.LoadAnotherVerse(
                                             when (state.khatm?.type) {
-                                                KhatmType.JOZ.name -> state.khatm?.joz?.minus(1) ?: state.khatm?.joz
-                                                KhatmType.HEZB.name -> state.khatm?.hezb?.minus(1) ?: state.khatm?.hezb
-                                                KhatmType.PAGE.name -> state.khatm?.page?.minus(1) ?: state.khatm?.page
+                                                KhatmType.JOZ.name -> state.khatm?.joz?.minus(1)
+                                                    ?: state.khatm?.joz
+
+                                                KhatmType.HEZB.name -> state.khatm?.hezb?.minus(1)
+                                                    ?: state.khatm?.hezb
+
+                                                KhatmType.PAGE.name -> state.khatm?.page?.minus(1)
+                                                    ?: state.khatm?.page
+
                                                 else -> {}
                                             } as Int
                                         )
@@ -258,9 +275,15 @@ fun KhatmVersesScreen(
                                     viewModel.handleIntent(
                                         KhatmVersesIntent.LoadAnotherVerse(
                                             when (state.khatm?.type) {
-                                                KhatmType.JOZ.name -> state.khatm?.joz?.plus(1) ?: state.khatm?.joz
-                                                KhatmType.HEZB.name -> state.khatm?.hezb?.plus(1) ?: state.khatm?.hezb
-                                                KhatmType.PAGE.name -> state.khatm?.page?.plus(1) ?: state.khatm?.page
+                                                KhatmType.JOZ.name -> state.khatm?.joz?.plus(1)
+                                                    ?: state.khatm?.joz
+
+                                                KhatmType.HEZB.name -> state.khatm?.hezb?.plus(1)
+                                                    ?: state.khatm?.hezb
+
+                                                KhatmType.PAGE.name -> state.khatm?.page?.plus(1)
+                                                    ?: state.khatm?.page
+
                                                 else -> {}
                                             } as Int
                                         )
@@ -295,7 +318,7 @@ fun KhatmVersesScreen(
 @Preview(showBackground = true)
 @Composable
 fun KhatmVersesScreenPreview() {
-    MoshafTheme {
+    MoshafTheme(false) {
         KhatmVersesScreen(
             navController = rememberNavController()
         )

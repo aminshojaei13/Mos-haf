@@ -1,13 +1,16 @@
 package com.braveboy.mos_haf.ui.theme
 
 import android.app.Activity
-import android.util.Log
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalView
@@ -41,12 +44,16 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun MoshafTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    var colorScheme by remember { mutableStateOf(LightColorScheme) }
+    LaunchedEffect(darkTheme) {
+        colorScheme = when {
+            darkTheme -> DarkColorScheme
+            else -> LightColorScheme
+        }
+
     }
     val view = LocalView.current
     if (!view.isInEditMode) {
@@ -56,8 +63,6 @@ fun MoshafTheme(
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
         }
     }
-
-    Log.d("toni", "MoshafTheme: $darkTheme")
 
     MaterialTheme(
         colorScheme = colorScheme,

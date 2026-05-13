@@ -1,5 +1,6 @@
 package com.braveboy.mos_haf.presentation.feature.search
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -189,6 +191,7 @@ fun SearchScreen(navController: NavController) {
     }
 }
 
+@SuppressLint("FrequentlyChangingValue")
 @Composable
 fun QuranContent(
     state: SearchState,
@@ -201,6 +204,22 @@ fun QuranContent(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
+        val lazyState = rememberLazyListState()
+
+        LaunchedEffect(lazyState.firstVisibleItemIndex) {
+            if (state.verses.isNotEmpty() && lazyState.layoutInfo.visibleItemsInfo.last().index == state.verses.lastIndex) {
+                onIntent(
+                    SaveBookmark(
+                        LastReadModel(
+                            source = null,
+                            start = null,
+                            end = null
+                        )
+                    )
+                )
+            }
+        }
+
         SearchBox(state) { find ->
             onIntent(find)
         }
@@ -217,6 +236,7 @@ fun QuranContent(
                     modifier = Modifier
                         .weight(1f)
                         .padding(top = 16.dp),
+                    lazyState = lazyState,
                     verses = state.verses,
                     translations = state.translations,
                     fontSize = fontSize ?: 28.sp,

@@ -45,10 +45,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import com.braveboy.mos_haf.R
+import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.domain.model.Quran
 import com.braveboy.mos_haf.presentation.feature.detail.VerseItem
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
-import com.braveboy.mos_haf.components.safeClickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("FrequentlyChangingValue", "UnusedBoxWithConstraintsScope")
@@ -72,7 +72,7 @@ fun AyatComponent(
 
     LaunchedEffect(bookmarkedAya) {
         if (bookmarkedAya) {
-            if (lazyState.firstVisibleItemIndex + lazyState.layoutInfo.visibleItemsInfo.lastIndex > verses.lastIndex){
+            if (lazyState.firstVisibleItemIndex + lazyState.layoutInfo.visibleItemsInfo.lastIndex > verses.lastIndex) {
                 Toast.makeText(context, "شما همه آیات را خوانده‌اید", Toast.LENGTH_SHORT).show()
                 bookmarkedAya = false
             } else {

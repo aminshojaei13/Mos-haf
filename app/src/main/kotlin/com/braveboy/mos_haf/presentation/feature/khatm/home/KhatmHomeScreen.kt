@@ -163,7 +163,9 @@ fun KhatmHomeScreen(navController: NavController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(8.dp),
-                                progress = { item.completedPages.toFloat() / 664 },
+                                progress = {
+                                    item.completedPages.toFloat() / 604
+                                },
                                 color = ProgressIndicatorDefaults.linearColor,
                                 trackColor = ProgressIndicatorDefaults.linearTrackColor,
                                 strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,

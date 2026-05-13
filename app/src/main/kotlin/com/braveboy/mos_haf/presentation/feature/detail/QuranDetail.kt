@@ -50,6 +50,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.R
@@ -73,9 +74,9 @@ fun QuranDetailScreen(
     var fontSize by remember { mutableStateOf(28.sp) }
     val lazyState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    var loading by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.fontSize) {
-        Log.d("xavi", "QuranDetailScreen: ${state.fontSize}")
         sliderState.value = state.fontSize ?: sliderState.value
     }
 
@@ -95,7 +96,9 @@ fun QuranDetailScreen(
 
     LaunchedEffect(true) {
         if (state.lastRead?.start != null) {
+            loading = true
             lazyState.animateScrollToItem(state.lastRead?.start?.aya ?: 0)
+            loading = false
         }
     }
 
@@ -183,6 +186,14 @@ fun QuranDetailScreen(
                 CircularProgressIndicator(modifier = Modifier.size(64.dp))
             }
         } else {
+            if (loading) {
+                Dialog(
+                    onDismissRequest = { },
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                }
+            }
+
             AyatComponent(
                 modifier = Modifier.padding(paddingValues),
                 verses = state.verses,
@@ -203,6 +214,13 @@ fun QuranDetailScreen(
                 changeSura = {
                     viewModel.loadVersesAndTranslations(
                         it
+                    )
+                    viewModel.saveBookmark(
+                        LastReadModel(
+                            source = null,
+                            start = null,
+                            end = null
+                        )
                     )
                 }
             )
@@ -265,7 +283,7 @@ fun VerseItem(
 @Preview(showBackground = true)
 @Composable
 fun QuranDetailScreenPreview() {
-    MoshafTheme {
+    MoshafTheme(false) {
         QuranDetailScreen(
             navController = rememberNavController()
         )
