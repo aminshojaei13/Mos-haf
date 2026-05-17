@@ -17,4 +17,7 @@ class KhatmRepository(private val localDataSource: LocalDataSource) {
 
     fun getKhatmQuran(id: Int) =
         localDataSource.getKhatmQuran(id)
+
+    fun deleteKhatmQuran(khatm: KhatmEntity) =
+        localDataSource.deleteKhatmQuran(khatm)
 }

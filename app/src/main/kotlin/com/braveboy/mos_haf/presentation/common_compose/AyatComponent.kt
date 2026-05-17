@@ -184,7 +184,7 @@ fun AyatComponent(
                 if (verse.aya == 1 || index == 0) {
                     Box(Modifier.fillMaxWidth()) {
                         Text(
-                            text = verse.suraName.orEmpty(),
+                            text =  verse.sura.toString().toPersianNumber() + " - " + verse.suraName.orEmpty(),
                             modifier = Modifier.align(Alignment.BottomStart),
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodySmall,

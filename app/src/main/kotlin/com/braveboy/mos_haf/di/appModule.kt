@@ -9,6 +9,7 @@ import com.braveboy.mos_haf.data.local.datasource.LocalDataSource
 import com.braveboy.mos_haf.data.repository.KhatmRepository
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.data.repository.QuranRepository
+import com.braveboy.mos_haf.domain.usecase.DeleteKhatmQuranUseCase
 import com.braveboy.mos_haf.domain.usecase.GetAllKhatmQuranUseCase
 import com.braveboy.mos_haf.domain.usecase.GetKhatmQuranUseCase
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
@@ -59,6 +60,7 @@ val appModule = module {
     singleOf(::GetVerseByHezbUseCase)
     singleOf(::GetVerseByPageUseCase)
     singleOf(::UpdateKhatmQuranUseCase)
+    singleOf(::DeleteKhatmQuranUseCase)
 
     // ViewModels
     viewModelOf(::SearchViewModel)

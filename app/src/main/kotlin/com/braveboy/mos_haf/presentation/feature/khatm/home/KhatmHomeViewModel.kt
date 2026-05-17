@@ -3,6 +3,7 @@ package com.braveboy.mos_haf.presentation.feature.khatm.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.braveboy.mos_haf.data.local.entity.KhatmEntity
+import com.braveboy.mos_haf.domain.usecase.DeleteKhatmQuranUseCase
 import com.braveboy.mos_haf.domain.usecase.GetAllKhatmQuranUseCase
 import com.braveboy.mos_haf.domain.usecase.InsertKhatmQuranUseCase
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +14,8 @@ import kotlinx.coroutines.launch
 
 class KhatmHomeViewModel(
     private val insertKhatmQuranUseCase: InsertKhatmQuranUseCase,
-    private val getAllKhatmQuranUseCase: GetAllKhatmQuranUseCase
+    private val getAllKhatmQuranUseCase: GetAllKhatmQuranUseCase,
+    private val deleteKhatmQuranUseCase: DeleteKhatmQuranUseCase,
 ) : ViewModel() {
     private val _state = MutableStateFlow(KhatmHomeState())
     val state: StateFlow<KhatmHomeState> = _state
@@ -34,6 +36,9 @@ class KhatmHomeViewModel(
             }
 
             KhatmHomeIntent.LoadKhatmDetail -> getAllKhatm()
+            is KhatmHomeIntent.DeleteKhatm -> {
+                deleteKhatmQuran(intent.khatmEntity)
+            }
         }
     }
 
@@ -48,6 +53,13 @@ class KhatmHomeViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val list = getAllKhatmQuranUseCase.getAllKhatm()
             _state.update { it.copy(khatms = list) }
+        }
+    }
+
+    fun deleteKhatmQuran(khatm: KhatmEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteKhatmQuranUseCase.invoke(khatm)
+            getAllKhatm()
         }
     }
 

@@ -3,6 +3,7 @@ package com.braveboy.mos_haf.presentation.feature.suralist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -107,14 +108,27 @@ fun SuraListScreen(navController: NavController) {
 
                     VerticalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
 
-                    Text(
-                        modifier = Modifier
-                            .padding(vertical = 4.dp, horizontal = 16.dp),
-                        text = "جز : " + state.value[it].juz.toString().toPersianNumber(),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
+                    Column(
+                    ) {
+                        Text(
+                            modifier = Modifier
+                                .padding(vertical = 4.dp, horizontal = 16.dp),
+                            text = "جز : " + state.value[it].juz.toString().toPersianNumber(),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+
+                        Text(
+                            modifier = Modifier
+                                .padding(vertical = 4.dp, horizontal = 16.dp),
+                            text = "سوره شماره : " + state.value[it].sura.toString().toPersianNumber(),
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                    }
+
                 }
             }
         }

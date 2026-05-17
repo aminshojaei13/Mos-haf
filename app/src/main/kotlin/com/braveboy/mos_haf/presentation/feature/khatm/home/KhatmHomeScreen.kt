@@ -1,6 +1,8 @@
 package com.braveboy.mos_haf.presentation.feature.khatm.home
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -21,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,6 +34,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.RadioButton
@@ -45,10 +50,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.braveboy.mos_haf.R
@@ -87,6 +95,7 @@ fun KhatmHomeScreen(navController: NavController) {
         }
     ) { paddingValues ->
         var showBottomSheet by remember { mutableStateOf(false) }
+        var showRemoveDialog by remember { mutableStateOf(false) }
 
         if (showBottomSheet) {
             NewKhatmModalBottomSheet(onDismissRequest = { showBottomSheet = false }) {
@@ -112,6 +121,71 @@ fun KhatmHomeScreen(navController: NavController) {
                     itemsIndexed(
                         state.value.khatms,
                     ) { index, item ->
+                        AnimatedVisibility(showRemoveDialog) {
+                            Dialog(
+                                onDismissRequest = {
+                                    showRemoveDialog = false
+                                }
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp)
+                                        .clip(MaterialTheme.shapes.large)
+                                        .background(MaterialTheme.colorScheme.surface)
+                                        .padding(16.dp),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.Start
+                                ) {
+                                    Text(
+                                        text = "آیا مایل به حذف این ختم هستید ؟",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        textAlign = TextAlign.Start
+                                    )
+
+                                    Spacer(Modifier.height(8.dp))
+
+                                    Row(
+
+                                    ) {
+                                        OutlinedButton(
+                                            modifier = Modifier.weight(1f),
+                                            onClick = {
+                                                showRemoveDialog = false
+                                            }
+                                        ) {
+                                            Text(
+                                                text = "خیر",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+
+                                        Spacer(Modifier.width(8.dp))
+
+                                        Button(
+                                            modifier = Modifier.weight(1f),
+                                            onClick = {
+                                                showRemoveDialog = false
+                                                viewModel.handleIntent(
+                                                    KhatmHomeIntent.DeleteKhatm(
+                                                        item
+                                                    )
+                                                )
+                                            }
+                                        ) {
+                                            Text(
+                                                text = "بله",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                textAlign = TextAlign.Center
+                                            )
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+
                         Column(
                             Modifier
                                 .fillMaxWidth()
@@ -129,6 +203,19 @@ fun KhatmHomeScreen(navController: NavController) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                             ) {
+                                IconButton(
+                                    modifier = Modifier.align(Alignment.TopStart),
+                                    onClick = {
+                                        showRemoveDialog = true
+                                    }
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.size(16.dp),
+                                        imageVector = Icons.Outlined.RemoveCircleOutline,
+                                        tint = Color.Red,
+                                        contentDescription = null
+                                    )
+                                }
                                 Text(
                                     modifier = Modifier
                                         .align(Alignment.Center)

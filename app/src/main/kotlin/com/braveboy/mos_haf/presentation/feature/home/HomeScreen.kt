@@ -2,6 +2,7 @@ package com.braveboy.mos_haf.presentation.feature.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,14 +21,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Badge
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -35,9 +39,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -49,6 +57,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.braveboy.mos_haf.BuildConfig
@@ -122,7 +131,120 @@ fun HomeScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         val uriHandler = LocalUriHandler.current
+        var showDialog by remember { mutableStateOf(false) }
 
+        AnimatedVisibility(showDialog) {
+            Dialog(
+                onDismissRequest = {
+                    showDialog = false
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .clip(MaterialTheme.shapes.large)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = "لطفا با ثبت امتیاز و نظر در بهبود و توسعه این برنامه مشارکت کنید.",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Start
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        text = "این برنامه در زمان جنگ رمضان توسعه داده شده است،",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Start
+                    )
+
+                    Spacer(Modifier.height(4.dp))
+
+
+                    Text(
+                        text = "برای شادی روح شهدا و گذشتگان صلوات.",
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Start
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    val annotatedText = buildAnnotatedString {
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color.Gray,
+                            )
+                        ) {
+                            append(
+                                text = "متن و ترجمه قرآن، با استفاده از دیتابیس سایت ",
+                            )
+                        }
+
+                        pushStringAnnotation(
+                            tag = "URL",
+                            annotation = "https://www.striing.ir/file/4:quran-database"
+                        )
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color(0xFF1E88E5), // رنگ آبی
+                                textDecoration = TextDecoration.Underline
+                            )
+                        ) {
+                            append("ریسمان")
+                        }
+                        pop()
+
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color.Gray,
+                            )
+                        ) {
+                            append(" می‌باشد.")
+                        }
+                    }
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        ClickableText(
+                            modifier = Modifier.align(Alignment.Center),
+                            text = annotatedText,
+                            style = MaterialTheme.typography.bodySmall,
+                            onClick = { offset ->
+                                annotatedText.getStringAnnotations(
+                                    tag = "URL",
+                                    start = offset,
+                                    end = offset
+                                )
+                                    .firstOrNull()?.let { annotation ->
+                                        uriHandler.openUri(annotation.item)
+                                    }
+                            }
+                        )
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            showDialog = false
+                        }
+                    ) {
+                        Text(
+                            text = "بستن",
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+
+            }
+        }
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -230,71 +352,32 @@ fun HomeScreen(
 
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
             Spacer(modifier = Modifier.weight(1F))
 
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                text = "نسخه : " + BuildConfig.VERSION_NAME,
-                textAlign = TextAlign.Center
-            )
-
-            val annotatedText = buildAnnotatedString {
-                withStyle(
-                    style = SpanStyle(
-                        color = Color.Gray,
-                    )
-                ) {
-                    append(
-                        text = "متن و ترجمه قرآن، با استفاده از دیتابیس سایت ",
-                    )
-                }
-
-                pushStringAnnotation(
-                    tag = "URL",
-                    annotation = "https://www.striing.ir/file/4:quran-database"
-                )
-                withStyle(
-                    style = SpanStyle(
-                        color = Color(0xFF1E88E5), // رنگ آبی
-                        textDecoration = TextDecoration.Underline
-                    )
-                ) {
-                    append("ریسمان")
-                }
-                pop()
-
-                withStyle(
-                    style = SpanStyle(
-                        color = Color.Gray,
-                    )
-                ) {
-                    append(" می‌باشد.")
-                }
-            }
-
-            Box(
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
-                ClickableText(
-                    modifier = Modifier.align(Alignment.Center),
-                    text = annotatedText,
-                    style = MaterialTheme.typography.bodySmall,
-                    onClick = { offset ->
-                        annotatedText.getStringAnnotations(
-                            tag = "URL",
-                            start = offset,
-                            end = offset
-                        )
-                            .firstOrNull()?.let { annotation ->
-                                uriHandler.openUri(annotation.item)
-                            }
-                    }
+                Text(
+                    text = "نسخه : " + BuildConfig.VERSION_NAME,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(Modifier.width(8.dp))
+
+                Icon(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .safeClickable {
+                            showDialog = true
+                        },
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onTertiary
                 )
             }
-
-
         }
     }
 }

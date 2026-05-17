@@ -21,7 +21,9 @@ import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 fun ScreenNavController() {
     val navController = rememberNavController()
 
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    CompositionLocalProvider(
+        LocalLayoutDirection provides LayoutDirection.Rtl
+    ) {
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
