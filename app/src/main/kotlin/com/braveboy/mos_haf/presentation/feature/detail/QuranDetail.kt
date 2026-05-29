@@ -1,6 +1,5 @@
 package com.braveboy.mos_haf.presentation.feature.detail
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -57,6 +56,8 @@ import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
+import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
+import com.braveboy.mos_haf.presentation.feature.player.presentation.QuranPlayer
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -157,7 +158,11 @@ fun QuranDetailScreen(
                                 )
                             }
 
-                            HorizontalDivider(Modifier.padding(vertical = 8.dp), DividerDefaults.Thickness, DividerDefaults.color)
+                            HorizontalDivider(
+                                Modifier.padding(vertical = 8.dp),
+                                DividerDefaults.Thickness,
+                                DividerDefaults.color
+                            )
 
                             Text(
                                 text = stringResource(R.string.label_font_size),
@@ -181,55 +186,69 @@ fun QuranDetailScreen(
             )
         }
     ) { paddingValues ->
-        if (state.isLoading) {
-            Box(Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+        ) {
+            if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.size(64.dp))
-            }
-        } else {
-            if (loading) {
-                Dialog(
-                    onDismissRequest = { },
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
+            } else {
+                if (loading) {
+                    Dialog(
+                        onDismissRequest = { },
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                    }
                 }
-            }
 
-            AyatComponent(
-                modifier = Modifier.padding(paddingValues),
-                verses = state.verses,
-                lazyState = lazyState,
-                translations = state.translations,
-                fontSize = fontSize,
-                suras = state.suraNames,
-                overScrollEnable = true,
-                bookmarked = {
-                    viewModel.saveBookmark(
-                        LastReadModel(
-                            source = "detail",
-                            start = it,
-                            end = state.verses.last()
+                AyatComponent(
+                    verses = state.verses,
+                    lazyState = lazyState,
+                    translations = state.translations,
+                    fontSize = fontSize,
+                    suras = state.suraNames,
+                    overScrollEnable = true,
+                    bookmarked = {
+                        viewModel.saveBookmark(
+                            LastReadModel(
+                                source = "detail",
+                                start = it,
+                                end = state.verses.last()
+                            )
                         )
-                    )
-                },
-                changeSura = {
-                    viewModel.loadVersesAndTranslations(
-                        it
-                    )
-                    viewModel.saveBookmark(
-                        LastReadModel(
-                            source = null,
-                            start = null,
-                            end = null
+                    },
+                    changeSura = {
+                        viewModel.loadVersesAndTranslations(
+                            it
                         )
-                    )
+                        viewModel.saveBookmark(
+                            LastReadModel(
+                                source = null,
+                                start = null,
+                                end = null
+                            )
+                        )
+                    }
+                )
+
+                val list = state.verses.map {
+                    Pair(it.sura, it.aya)
                 }
-            )
+
+                QuranPlayer(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    type = PlayType.SURAH,
+                    id = state.verses.first().sura
+                )
+            }
         }
     }
 }
 
 @Composable
 fun VerseItem(
+    modifier: Modifier = Modifier,
     arabicText: String,
     translationText: String,
     ayaNumber: String,
@@ -239,7 +258,7 @@ fun VerseItem(
     var isExpanded by remember { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 16.dp)
             .animateContentSize()

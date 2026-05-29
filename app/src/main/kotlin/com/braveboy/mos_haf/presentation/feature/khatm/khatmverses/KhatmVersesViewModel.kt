@@ -8,6 +8,7 @@ import androidx.navigation.toRoute
 import com.braveboy.mos_haf.AppConstants.BOOKMARK
 import com.braveboy.mos_haf.AppConstants.FONT_SIZE
 import com.braveboy.mos_haf.data.local.entity.KhatmEntity
+import com.braveboy.mos_haf.data.repository.HezbTimeRepository
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.domain.usecase.GetKhatmQuranUseCase
@@ -36,7 +37,7 @@ class KhatmVersesViewModel(
     private val getVerseByHezbUseCase: GetVerseByHezbUseCase,
     private val preferencesRepository: PreferencesRepository,
     private val updateKhatmQuranUseCase: UpdateKhatmQuranUseCase,
-    private val getKhatmQuranUseCase: GetKhatmQuranUseCase
+    private val getKhatmQuranUseCase: GetKhatmQuranUseCase,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(KhatmVersesState())

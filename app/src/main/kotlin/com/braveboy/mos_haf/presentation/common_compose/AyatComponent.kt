@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +12,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,7 +25,6 @@ import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.outlined.ArrowCircleDown
 import androidx.compose.material.icons.outlined.ArrowCircleUp
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -51,7 +50,7 @@ import com.braveboy.mos_haf.presentation.feature.detail.VerseItem
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("FrequentlyChangingValue", "UnusedBoxWithConstraintsScope")
+@SuppressLint("FrequentlyChangingValue", "UnusedBoxWithConstraintsScope", "RememberInComposition")
 @Composable
 fun AyatComponent(
     modifier: Modifier = Modifier,
@@ -68,21 +67,8 @@ fun AyatComponent(
 ) {
     var showOtherSura by remember { mutableIntStateOf(0) }
     var bookmarkedAya by remember { mutableStateOf(false) }
+    var bookmarkedAyaNumber by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
-
-    LaunchedEffect(bookmarkedAya) {
-        if (bookmarkedAya) {
-            if (lazyState.firstVisibleItemIndex + lazyState.layoutInfo.visibleItemsInfo.lastIndex > verses.lastIndex) {
-                Toast.makeText(context, "شما همه آیات را خوانده‌اید", Toast.LENGTH_SHORT).show()
-                bookmarkedAya = false
-            } else {
-                val index =
-                    lazyState.firstVisibleItemIndex + lazyState.layoutInfo.visibleItemsInfo.lastIndex
-                val verse = verses[index - 1]
-                bookmarked(verse)
-            }
-        }
-    }
 
     LaunchedEffect(lazyState.isScrollInProgress) {
         if (overScrollEnable) {
@@ -137,8 +123,7 @@ fun AyatComponent(
         )
 
         LazyColumn(
-            modifier = Modifier
-                .padding(16.dp),
+            modifier = Modifier.padding(16.dp),
             state = lazyState,
         ) {
             item {
@@ -184,7 +169,8 @@ fun AyatComponent(
                 if (verse.aya == 1 || index == 0) {
                     Box(Modifier.fillMaxWidth()) {
                         Text(
-                            text =  verse.sura.toString().toPersianNumber() + " - " + verse.suraName.orEmpty(),
+                            text = verse.sura.toString()
+                                .toPersianNumber() + " - " + verse.suraName.orEmpty(),
                             modifier = Modifier.align(Alignment.BottomStart),
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodySmall,
@@ -215,6 +201,27 @@ fun AyatComponent(
                 }
                 if (verse.text.isNotBlank()) {
                     VerseItem(
+                        modifier = Modifier.safeClickable {
+                            when {
+                                index == verses.lastIndex -> {
+                                    Toast.makeText(
+                                        context,
+                                        "شما همه آیات را خوانده‌اید",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+
+                                bookmarkedAya && bookmarkedAyaNumber == verse.aya -> {
+                                    bookmarkedAya = false
+                                }
+
+                                else -> {
+                                    bookmarkedAya = true
+                                    bookmarked(verse)
+                                    bookmarkedAyaNumber = verse.aya
+                                }
+                            }
+                        },
                         arabicText = verse.text,
                         translationText = translations[index],
                         ayaNumber = verse.aya.toString(),
@@ -265,26 +272,49 @@ fun AyatComponent(
             }
         }
 
-        FloatingActionButton(
+        Row(
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .navigationBarsPadding(),
-            containerColor = MaterialTheme.colorScheme.primary,
-            onClick = {
-                bookmarkedAya = !bookmarkedAya
-            }
+                .align(Alignment.TopEnd)
+                .padding(horizontal = 8.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = MaterialTheme.shapes.extraLarge
+                )
+                .safeClickable {
+                    Toast.makeText(context, "روی آیه مورد نظر کلیک کنید", Toast.LENGTH_SHORT).show()
+                }
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            AnimatedVisibility(
-                visible = bookmarkedAya,
-                enter = slideInVertically(),
-            ) {
-                Icon(Icons.Default.Bookmark, contentDescription = null)
-            }
             AnimatedVisibility(
                 visible = !bookmarkedAya,
                 enter = slideInVertically(),
             ) {
-                Icon(Icons.Default.BookmarkBorder, contentDescription = null)
+                Icon(
+                    imageVector = Icons.Default.BookmarkBorder,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
+            if (
+                bookmarkedAya
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Bookmark,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+
+                Spacer(Modifier.width(4.dp))
+
+                Text(
+                    text = "آیه ${bookmarkedAyaNumber.toString().toPersianNumber()}",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     }

@@ -33,10 +33,12 @@ import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -44,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +71,8 @@ import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianWord
+import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
+import com.braveboy.mos_haf.presentation.feature.player.presentation.QuranPlayer
 import com.braveboy.mos_haf.presentation.feature.search.SearchIntent.SaveBookmark
 import org.koin.androidx.compose.koinViewModel
 
@@ -199,10 +204,9 @@ fun QuranContent(
     modifier: Modifier = Modifier,
     fontSize: TextUnit? = null
 ) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
     ) {
         val lazyState = rememberLazyListState()
 
@@ -220,10 +224,6 @@ fun QuranContent(
             }
         }
 
-        SearchBox(state) { find ->
-            onIntent(find)
-        }
-
         when {
             state.isLoading -> LoadingIndicator()
             state.error != null -> ErrorView(
@@ -233,9 +233,6 @@ fun QuranContent(
 
             state.verses.isNotEmpty() -> {
                 AyatComponent(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(top = 16.dp),
                     lazyState = lazyState,
                     verses = state.verses,
                     translations = state.translations,
@@ -255,11 +252,40 @@ fun QuranContent(
                 )
             }
         }
+
+        SearchBox(
+            modifier = Modifier.align(Alignment.BottomEnd),
+            state = state
+        ) { find ->
+            onIntent(find)
+        }
+
+        if (state.verses.isNotEmpty()) {
+            QuranPlayer(
+                modifier = Modifier.align(Alignment.BottomStart),
+                type = PlayType.HEZB,
+                id = state.verses.first().juz
+            )
+        }
     }
+
+    /*if (state.verses.isNotEmpty()) {
+        val list = state.verses.map {
+            Pair(it.sura, it.aya)
+        }
+
+        QuranPlayer(
+            modifier = Modifier.align(Alignment.BottomStart),
+            type = PlayType.PLAYLIST(list),
+        )
+    }*/
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchBox(
+    modifier: Modifier = Modifier,
     state: SearchState,
     onClick: (SearchIntent) -> Unit
 ) {
@@ -268,9 +294,13 @@ fun SearchBox(
     var endSuraIndex by remember { mutableStateOf<Int?>(null) }
     var startAyaIndex by remember { mutableStateOf<Int?>(null) }
     var endAyaIndex by remember { mutableStateOf<Int?>(null) }
+    var jJozIndex by remember { mutableStateOf<Int?>(null) }
     var jozIndex by remember { mutableStateOf<Int?>(null) }
     var hezbIndex by remember { mutableStateOf<Int?>(null) }
     var showSearchBox by remember { mutableStateOf(true) }
+    val bottomSheet = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
 
     LaunchedEffect(state.lastRead?.start) {
         if (state.lastRead?.start != null) {
@@ -278,224 +308,301 @@ fun SearchBox(
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        if (showSearchBox) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
+    if (showSearchBox) {
+        ModalBottomSheet(
+            sheetState = bottomSheet,
+            onDismissRequest = {
+                showSearchBox = false
+            }
+        ) {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
             ) {
-                SuraDropdown(
-                    modifier = Modifier.weight(1f),
-                    label = stringResource(R.string.label_sura),
-                    suraNames = state.suraNames,
-                    selectedSuraIndex = suraIndex,
-                    onSuraSelected = { sura ->
-                        suraIndex = state.suraNames.map { it.toPersianWord() }.indexOf(sura)
-                    },
-                )
-
-                Spacer(Modifier.width(4.dp))
-
-                OutlinedIconButton(
-                    modifier = Modifier.size(56.dp),
-                    shape = MaterialTheme.shapes.small,
-                    enabled = suraIndex != null,
-                    onClick = {
-                        val sura = suraIndex
-                        if (sura != null) {
-                            onClick(
-                                SearchIntent.LoadVersesBySura(sura)
-                            )
-                            suraIndex = null
-                        }
-                        showSearchBox = false
-                    },
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null
+                    SuraDropdown(
+                        modifier = Modifier.weight(1f),
+                        label = stringResource(R.string.label_sura),
+                        suraNames = state.suraNames,
+                        selectedSuraIndex = suraIndex,
+                        onSuraSelected = { sura ->
+                            suraIndex = state.suraNames.map { it.toPersianWord() }.indexOf(sura)
+                        },
                     )
-                }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(Modifier.width(4.dp))
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                JozOrHezbDropdown(
-                    modifier = Modifier.weight(1f),
-                    label = "جز",
-                    selectedIndex = jozIndex,
-                    onSelected = { jozIndex = it }
-                )
-
-                JozOrHezbDropdown(
-                    label = "حزب",
-                    selectedIndex = hezbIndex,
-                    onSelected = { hezbIndex = it },
-                    modifier = Modifier.weight(1f)
-                )
-
-                OutlinedIconButton(
-                    modifier = Modifier.size(56.dp),
-                    shape = MaterialTheme.shapes.small,
-                    enabled = hezbIndex != null && jozIndex != null,
-                    onClick = {
-                        val joz = jozIndex?.plus(1)
-                        val hezb = hezbIndex?.plus(1)
-
-                        if (joz != null && hezb != null) {
-                            onClick(
-                                SearchIntent.LoadVersesByJozAndHezb(
-                                    joz, hezb
+                    OutlinedIconButton(
+                        modifier = Modifier.size(56.dp),
+                        shape = MaterialTheme.shapes.small,
+                        enabled = suraIndex != null,
+                        onClick = {
+                            val sura = suraIndex
+                            if (sura != null) {
+                                onClick(
+                                    SearchIntent.LoadVersesBySura(sura)
                                 )
-                            )
-                            jozIndex = null
-                            hezbIndex = null
-                        }
-                        showSearchBox = false
-                    },
-                    border = BorderStroke(
-                        width = 1.dp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                                suraIndex = null
+                            }
+                            showSearchBox = false
+                        },
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null
+                    JozOrHezbDropdown(
+                        modifier = Modifier.weight(1f),
+                        label = "جز",
+                        selectedIndex = jJozIndex,
+                        onSelected = { jJozIndex = it }
+                    )
+
+                    OutlinedIconButton(
+                        modifier = Modifier.size(56.dp),
+                        shape = MaterialTheme.shapes.small,
+                        enabled = jJozIndex != null,
+                        onClick = {
+                            val joz = jJozIndex?.plus(1)
+
+                            if (joz != null) {
+                                onClick(
+                                    SearchIntent.LoadVersesByJoz(joz)
+                                )
+                                jJozIndex = null
+                            }
+                            showSearchBox = false
+                        },
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    JozOrHezbDropdown(
+                        modifier = Modifier.weight(1f),
+                        label = "جز",
+                        selectedIndex = jozIndex,
+                        onSelected = { jozIndex = it }
+                    )
+
+                    JozOrHezbDropdown(
+                        label = "حزب",
+                        selectedIndex = hezbIndex,
+                        onSelected = { hezbIndex = it },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    OutlinedIconButton(
+                        modifier = Modifier.size(56.dp),
+                        shape = MaterialTheme.shapes.small,
+                        enabled = hezbIndex != null && jozIndex != null,
+                        onClick = {
+                            val joz = jozIndex?.plus(1)
+                            val hezb = hezbIndex?.plus(1)
+
+                            if (joz != null && hezb != null) {
+                                onClick(
+                                    SearchIntent.LoadVersesByJozAndHezb(
+                                        joz, hezb
+                                    )
+                                )
+                                jozIndex = null
+                                hezbIndex = null
+                            }
+                            showSearchBox = false
+                        },
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SuraDropdown(
+                        label = stringResource(R.string.label_from_surah),
+                        suraNames = state.suraNames,
+                        selectedSuraIndex = startSuraIndex,
+                        onSuraSelected = { sura ->
+                            startSuraIndex =
+                                state.suraNames.map { it.toPersianWord() }.indexOf(sura)
+                            startAyaIndex = 0
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    AyaDropdown(
+                        label = stringResource(R.string.label_aya),
+                        ayaCount = startSuraIndex?.let { state.ayaCounts.getOrNull(it) } ?: 0,
+                        selectedAyaIndex = startAyaIndex,
+                        onAyaSelected = { startAyaIndex = it },
+                        modifier = Modifier.weight(0.5f)
                     )
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    SuraDropdown(
+                        label = stringResource(R.string.label_to_surah),
+                        suraNames = state.suraNames,
+                        selectedSuraIndex = endSuraIndex,
+                        onSuraSelected = { sura ->
+                            Log.d("xavi", sura)
+                            endSuraIndex = state.suraNames.map { it.toPersianWord() }.indexOf(sura)
+                            endAyaIndex = 0
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    AyaDropdown(
+                        label = "آیه",
+                        ayaCount = endSuraIndex?.let { state.ayaCounts.getOrNull(it) } ?: 0,
+                        selectedAyaIndex = endAyaIndex,
+                        onAyaSelected = { endAyaIndex = it },
+                        modifier = Modifier.weight(0.5f)
+                    )
+                }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                SuraDropdown(
-                    label = stringResource(R.string.label_from_surah),
-                    suraNames = state.suraNames,
-                    selectedSuraIndex = startSuraIndex,
-                    onSuraSelected = { sura ->
-                        startSuraIndex = state.suraNames.map { it.toPersianWord() }.indexOf(sura)
-                        startAyaIndex = 0
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .align(Alignment.CenterHorizontally),
+                    shape = MaterialTheme.shapes.small,
+                    onClick = {
+                        if (showSearchBox) {
+                            val sSura = startSuraIndex?.plus(1)
+                            val eSura = endSuraIndex?.plus(1)
+                            val sAya = startAyaIndex?.plus(1)
+                            val eAya = endAyaIndex?.plus(1)
+
+                            if (sSura != null && eSura != null && sAya != null && eAya != null) {
+                                onClick(
+                                    SearchIntent.LoadVersesByDetailedRange(
+                                        sSura, sAya, eSura, eAya
+                                    )
+                                )
+                                startSuraIndex = null
+                                endSuraIndex = null
+                                startAyaIndex = null
+                                endAyaIndex = null
+                            }
+                            showSearchBox = false
+                        } else {
+                            showSearchBox = true
+                        }
                     },
-                    modifier = Modifier.weight(1f)
-                )
+                    enabled = startSuraIndex != null && endSuraIndex != null || !showSearchBox
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = stringResource(
+                                id = R.string.label_search
+                            ),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
 
-                AyaDropdown(
-                    label = stringResource(R.string.label_aya),
-                    ayaCount = startSuraIndex?.let { state.ayaCounts.getOrNull(it) } ?: 0,
-                    selectedAyaIndex = startAyaIndex,
-                    onAyaSelected = { startAyaIndex = it },
-                    modifier = Modifier.weight(0.5f)
-                )
-            }
+                        Spacer(Modifier.width(8.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                SuraDropdown(
-                    label = stringResource(R.string.label_to_surah),
-                    suraNames = state.suraNames,
-                    selectedSuraIndex = endSuraIndex,
-                    onSuraSelected = { sura ->
-                        Log.d("xavi", sura)
-                        endSuraIndex = state.suraNames.map { it.toPersianWord() }.indexOf(sura)
-                        endAyaIndex = 0
-                    },
-                    modifier = Modifier.weight(1f)
-                )
-
-                AyaDropdown(
-                    label = "آیه",
-                    ayaCount = endSuraIndex?.let { state.ayaCounts.getOrNull(it) } ?: 0,
-                    selectedAyaIndex = endAyaIndex,
-                    onAyaSelected = { endAyaIndex = it },
-                    modifier = Modifier.weight(0.5f)
-                )
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = null
+                        )
+                    }
+                }
             }
         }
+    }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .align(Alignment.CenterHorizontally),
-            shape = MaterialTheme.shapes.small,
-            onClick = {
-                if (showSearchBox) {
-                    val sSura = startSuraIndex?.plus(1)
-                    val eSura = endSuraIndex?.plus(1)
-                    val sAya = startAyaIndex?.plus(1)
-                    val eAya = endAyaIndex?.plus(1)
-
-                    if (sSura != null && eSura != null && sAya != null && eAya != null) {
-                        onClick(
-                            SearchIntent.LoadVersesByDetailedRange(
-                                sSura, sAya, eSura, eAya
-                            )
-                        )
-                        startSuraIndex = null
-                        endSuraIndex = null
-                        startAyaIndex = null
-                        endAyaIndex = null
-                    }
-                    showSearchBox = false
-                } else {
-                    showSearchBox = true
-                }
-            },
-            enabled = startSuraIndex != null && endSuraIndex != null || !showSearchBox
+    FloatingActionButton(
+        modifier = modifier.padding(8.dp),
+        containerColor = MaterialTheme.colorScheme.primary,
+        onClick = {
+            showSearchBox = true
+        }
+    ) {
+        Row(
+            Modifier.padding(horizontal = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = stringResource(
-                        id = if (showSearchBox) R.string.label_search else R.string.label_search_again
-                    ),
-                    style = MaterialTheme.typography.bodyLarge
-                )
+            Text(
+                text = stringResource(
+                    id = R.string.label_search_again
+                ),
+                style = MaterialTheme.typography.bodyLarge
+            )
 
-                if (showSearchBox) {
-                    Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.width(8.dp))
 
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null
-                    )
-                }
-            }
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = null
+            )
         }
     }
 }

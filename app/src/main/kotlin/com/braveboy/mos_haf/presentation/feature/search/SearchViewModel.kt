@@ -1,5 +1,6 @@
 package com.braveboy.mos_haf.presentation.feature.search
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,6 +9,7 @@ import com.braveboy.mos_haf.AppConstants.FONT_SIZE
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
+import com.braveboy.mos_haf.domain.usecase.GetVerseByJozUseCase
 import com.braveboy.mos_haf.presentation.navigation.Screen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +23,7 @@ val PERSIAN_CHARACTERS = "^[\\s- ٔآابّپتثجچحخدذرزژسشصضطظ�
 
 class SearchViewModel(
     savedStateHandle: SavedStateHandle,
+    private val getVerseByJozUseCase: GetVerseByJozUseCase,
     private val getQuranVersesUseCase: GetQuranVersesUseCase,
     private val preferencesRepository: PreferencesRepository
 ) : ViewModel() {
@@ -72,7 +75,7 @@ class SearchViewModel(
             is SearchIntent.RefreshData -> loadInitialData()
             is SearchIntent.SaveBookmark -> saveBookmark(intent.lastRead)
             is SearchIntent.SaveTheme -> saveTheme(intent.isDark)
-
+            is SearchIntent.LoadVersesByJoz -> loadVersesByJoz(intent.joz)
         }
     }
 
@@ -192,6 +195,48 @@ class SearchViewModel(
                 )
             }
         }
+    }
+
+    private fun loadVersesByJoz(
+        joz: Int,
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.update { it.copy(isLoading = true) }
+
+            try {
+                var verses = getVerseByJozUseCase.getByJoz(joz)
+                var translates = emptyList<String>()
+
+                if (verses.isNotEmpty()) {
+                    val bismillahPattern = Regex(
+                        "بِسْمِ\\s*اللَّهِ\\s*الرَّحْمَـٰنِ\\s*الرَّحِيمِ"
+                    )
+
+                    verses = verses.map { verse ->
+                        verse.copy(
+                            text = verse.text.replace(bismillahPattern, "").trim()
+                        )
+                    }
+
+                    translates = getQuranVersesUseCase.getByTranslateRange(
+                        startSura = verses.first().sura,
+                        startAya = verses.first().aya,
+                        endSura = verses.last().sura,
+                        endAya = verses.last().aya
+                    )
+                }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        verses = verses,
+                        translations = translates
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("Error", "${e.message} - Error loading verse or translate")
+            }
+        }
+
     }
 
     private fun loadInitialData() {

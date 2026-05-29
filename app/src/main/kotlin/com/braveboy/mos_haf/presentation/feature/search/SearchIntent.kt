@@ -14,6 +14,9 @@ sealed class SearchIntent {
         val joz: Int,
         val hezb: Int,
     ) : SearchIntent()
+    data class LoadVersesByJoz(
+        val joz: Int,
+    ) : SearchIntent()
 
     data class LoadVersesBySura(
         val sura: Int,

@@ -1,10 +1,10 @@
 package com.braveboy.mos_haf.presentation.feature.khatm.khatmverses
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -42,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,7 +54,10 @@ import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
+import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
 import com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail.KhatmType
+import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
+import com.braveboy.mos_haf.presentation.feature.player.presentation.QuranPlayer
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,6 +76,7 @@ fun KhatmVersesScreen(
     val lazyState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var loading by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     LaunchedEffect(state.fontSize) {
         sliderState.value = state.fontSize ?: sliderState.value
@@ -103,8 +108,20 @@ fun KhatmVersesScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
+                    val name = state.khatmDetail?.name + " " + when (state.khatmDetail?.type) {
+                        KhatmType.JOZ.name -> "جز " + state.khatm?.joz.toString().toPersianNumber()
+                        KhatmType.HEZB.name -> "حزب " + state.khatm?.hezb.toString()
+                            .toPersianNumber()
+
+                        KhatmType.PAGE.name -> "صفحه " + state.khatm?.page.toString()
+                            .toPersianNumber()
+
+                        else -> {
+                            Log.d("xavi", "KhatmVersesScreen: name not in khatm type")
+                        }
+                    }
                     Text(
-                        text = state.suraName,
+                        text = name,
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
@@ -180,137 +197,166 @@ fun KhatmVersesScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
-        }
+        },
     ) { paddingValues ->
-        if (state.isLoading) {
-            Box(Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.padding(paddingValues)) {
+            if (state.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.size(64.dp))
-            }
-        } else {
-            if (loading) {
-                Dialog(
-                    onDismissRequest = { },
-                ) {
-                    CircularProgressIndicator(modifier = Modifier.size(48.dp))
+            } else {
+                if (loading) {
+                    Dialog(
+                        onDismissRequest = { },
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(48.dp))
+                    }
                 }
-            }
-            AyatComponent(
-                modifier = Modifier.padding(paddingValues),
-                verses = state.verses,
-                lazyState = lazyState,
-                translations = state.translations,
-                fontSize = fontSize,
-                suras = state.suraNames,
-                overScrollEnable = true,
-                bookmarked = {
-                    viewModel.saveBookmark(
-                        LastReadModel(
-                            id = state.khatmDetail?.id,
-                            source = state.khatm?.type,
-                            start = it,
-                            end = state.verses.last()
+
+                val detail = Pair(
+                    first = when (state.khatm?.type) {
+                        PlayType.JOZ.name -> PlayType.JOZ
+                        PlayType.HEZB.name -> PlayType.HEZB
+                        PlayType.PAGE.name -> PlayType.PAGE
+                        else -> PlayType.SURAH
+                    },
+                    second = when (state.khatm?.type) {
+                        PlayType.JOZ.name -> state.khatm!!.joz
+                        PlayType.HEZB.name -> state.khatm!!.hezb
+                        PlayType.PAGE.name -> state.khatm!!.page
+                        else -> 0
+                    }
+                )
+
+                AyatComponent(
+                    verses = state.verses,
+                    lazyState = lazyState,
+                    translations = state.translations,
+                    fontSize = fontSize,
+                    suras = state.suraNames,
+                    overScrollEnable = true,
+                    bookmarked = {
+                        viewModel.saveBookmark(
+                            LastReadModel(
+                                id = state.khatmDetail?.id,
+                                source = state.khatm?.type,
+                                start = it,
+                                end = state.verses.last()
+                            )
                         )
-                    )
-                },
-                backwardItem = {
-                    if (
-                        state.khatm?.joz != null && state.khatm?.joz!! > 1 ||
-                        state.khatm?.hezb != null && state.khatm?.hezb!! > 1 ||
-                        state.khatm?.page != null && state.khatm?.page!! > 1
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .safeClickable {
-                                    viewModel.handleIntent(
-                                        KhatmVersesIntent.LoadAnotherVerse(
-                                            when (state.khatm?.type) {
-                                                KhatmType.JOZ.name -> state.khatm?.joz?.minus(1)
-                                                    ?: state.khatm?.joz
-
-                                                KhatmType.HEZB.name -> state.khatm?.hezb?.minus(1)
-                                                    ?: state.khatm?.hezb
-
-                                                KhatmType.PAGE.name -> state.khatm?.page?.minus(1)
-                                                    ?: state.khatm?.page
-
-                                                else -> {}
-                                            } as Int
-                                        )
-                                    )
-                                },
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                    },
+                    backwardItem = {
+                        if (
+                            state.khatm?.joz != null && state.khatm?.joz!! > 1 ||
+                            state.khatm?.hezb != null && state.khatm?.hezb!! > 1 ||
+                            state.khatm?.page != null && state.khatm?.page!! > 1
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.ArrowCircleUp,
-                                contentDescription = "",
-                                tint = MaterialTheme.colorScheme.onTertiary
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = when (state.khatm?.type) {
-                                    KhatmType.JOZ.name -> "جز قبلی"
-                                    KhatmType.HEZB.name -> "حزب قبلی"
-                                    KhatmType.PAGE.name -> "صفحه قبلی"
-                                    else -> ""
-                                },
-                                color = MaterialTheme.colorScheme.onTertiary
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .safeClickable {
+                                        viewModel.handleIntent(
+                                            KhatmVersesIntent.LoadAnotherVerse(
+                                                when (state.khatm?.type) {
+                                                    KhatmType.JOZ.name -> state.khatm?.joz?.minus(1)
+                                                        ?: state.khatm?.joz
+
+                                                    KhatmType.HEZB.name -> state.khatm?.hezb?.minus(
+                                                        1
+                                                    )
+                                                        ?: state.khatm?.hezb
+
+                                                    KhatmType.PAGE.name -> state.khatm?.page?.minus(
+                                                        1
+                                                    )
+                                                        ?: state.khatm?.page
+
+                                                    else -> {}
+                                                } as Int
+                                            )
+                                        )
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.ArrowCircleUp,
+                                    contentDescription = "",
+                                    tint = MaterialTheme.colorScheme.onTertiary
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = when (state.khatm?.type) {
+                                        KhatmType.JOZ.name -> "جز قبلی"
+                                        KhatmType.HEZB.name -> "حزب قبلی"
+                                        KhatmType.PAGE.name -> "صفحه قبلی"
+                                        else -> ""
+                                    },
+                                    color = MaterialTheme.colorScheme.onTertiary
+                                )
+                            }
+                        }
+                    },
+                    forwardItem = {
+                        viewModel.handleIntent(KhatmVersesIntent.SaveCompleteReadPage)
+                        if (
+                            state.khatm?.joz != null && state.khatm?.joz!! < 30 ||
+                            state.khatm?.hezb != null && state.khatm?.hezb!! < 120 ||
+                            state.khatm?.page != null && state.khatm?.page!! < 604
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(vertical = 4.dp)
+                                    .fillMaxWidth()
+                                    .safeClickable {
+                                        viewModel.handleIntent(
+                                            KhatmVersesIntent.LoadAnotherVerse(
+                                                when (state.khatm?.type) {
+                                                    KhatmType.JOZ.name -> state.khatm?.joz?.plus(1)
+                                                        ?: state.khatm?.joz
+
+                                                    KhatmType.HEZB.name -> state.khatm?.hezb?.plus(1)
+                                                        ?: state.khatm?.hezb
+
+                                                    KhatmType.PAGE.name -> state.khatm?.page?.plus(1)
+                                                        ?: state.khatm?.page
+
+                                                    else -> {}
+                                                } as Int
+                                            )
+                                        )
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.ArrowCircleDown,
+                                    contentDescription = "",
+                                    tint = MaterialTheme.colorScheme.onTertiary
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    text = when (state.khatm?.type) {
+                                        KhatmType.JOZ.name -> "جز بعدی"
+                                        KhatmType.HEZB.name -> "حزب بعدی"
+                                        KhatmType.PAGE.name -> "صفحه بعدی"
+                                        else -> ""
+                                    },
+                                    color = MaterialTheme.colorScheme.onTertiary
+                                )
+                            }
                         }
                     }
-                },
-                forwardItem = {
-                    viewModel.handleIntent(KhatmVersesIntent.SaveCompleteReadPage)
-                    if (
-                        state.khatm?.joz != null && state.khatm?.joz!! < 30 ||
-                        state.khatm?.hezb != null && state.khatm?.hezb!! < 120 ||
-                        state.khatm?.page != null && state.khatm?.page!! < 604
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .padding(vertical = 4.dp)
-                                .fillMaxWidth()
-                                .safeClickable {
-                                    viewModel.handleIntent(
-                                        KhatmVersesIntent.LoadAnotherVerse(
-                                            when (state.khatm?.type) {
-                                                KhatmType.JOZ.name -> state.khatm?.joz?.plus(1)
-                                                    ?: state.khatm?.joz
+                )
 
-                                                KhatmType.HEZB.name -> state.khatm?.hezb?.plus(1)
-                                                    ?: state.khatm?.hezb
-
-                                                KhatmType.PAGE.name -> state.khatm?.page?.plus(1)
-                                                    ?: state.khatm?.page
-
-                                                else -> {}
-                                            } as Int
-                                        )
-                                    )
-                                },
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.ArrowCircleDown,
-                                contentDescription = "",
-                                tint = MaterialTheme.colorScheme.onTertiary
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = when (state.khatm?.type) {
-                                    KhatmType.JOZ.name -> "جز بعدی"
-                                    KhatmType.HEZB.name -> "حزب بعدی"
-                                    KhatmType.PAGE.name -> "صفحه بعدی"
-                                    else -> ""
-                                },
-                                color = MaterialTheme.colorScheme.onTertiary
-                            )
-                        }
-                    }
+                val ayats = state.verses.map {
+                    Pair(it.sura, it.aya)
                 }
-            )
+
+                QuranPlayer(
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                    type = detail.first,
+                    id = detail.second ?: 0
+                )
+            }
         }
     }
 }

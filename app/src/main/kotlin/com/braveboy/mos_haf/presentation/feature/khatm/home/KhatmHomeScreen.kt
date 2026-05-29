@@ -182,7 +182,6 @@ fun KhatmHomeScreen(navController: NavController) {
                                         }
                                     }
                                 }
-
                             }
                         }
 
@@ -269,7 +268,6 @@ fun KhatmHomeScreen(navController: NavController) {
 
             FloatingActionButton(
                 modifier = Modifier
-                    .padding(8.dp)
                     .align(Alignment.BottomEnd)
                     .navigationBarsPadding(),
                 containerColor = MaterialTheme.colorScheme.primary,

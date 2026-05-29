@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.braveboy.mos_haf.data.local.database.AppDatabase
 import com.braveboy.mos_haf.data.local.datasource.LocalDataSource
+import com.braveboy.mos_haf.data.repository.HezbTimeRepository
 import com.braveboy.mos_haf.data.repository.KhatmRepository
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.data.repository.QuranRepository
@@ -23,6 +24,8 @@ import com.braveboy.mos_haf.presentation.feature.home.HomeViewModel
 import com.braveboy.mos_haf.presentation.feature.khatm.home.KhatmHomeViewModel
 import com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail.KhatmDetailViewModel
 import com.braveboy.mos_haf.presentation.feature.khatm.khatmverses.KhatmVersesViewModel
+import com.braveboy.mos_haf.presentation.feature.player.data.PlayerRepository
+import com.braveboy.mos_haf.presentation.feature.player.presentation.PlayerViewController
 import com.braveboy.mos_haf.presentation.feature.search.SearchViewModel
 import com.braveboy.mos_haf.presentation.feature.suralist.SuraListViewModel
 import org.koin.android.ext.koin.androidContext
@@ -50,6 +53,8 @@ val appModule = module {
     singleOf(::QuranRepository)
     singleOf(::KhatmRepository)
     singleOf(::PreferencesRepository)
+    singleOf(::PlayerRepository)
+    single { HezbTimeRepository(androidContext()) }
 
     // UseCases
     singleOf(::GetQuranVersesUseCase)
@@ -70,4 +75,5 @@ val appModule = module {
     viewModelOf(::KhatmHomeViewModel)
     viewModelOf(::KhatmDetailViewModel)
     viewModelOf(::KhatmVersesViewModel)
+    viewModelOf(::PlayerViewController)
 }
