@@ -5,7 +5,6 @@ import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
 sealed class PlayerIntent {
     data class Load(
         val type: PlayType,
-        val number: Int
     ) : PlayerIntent()
 
     object Play : PlayerIntent()

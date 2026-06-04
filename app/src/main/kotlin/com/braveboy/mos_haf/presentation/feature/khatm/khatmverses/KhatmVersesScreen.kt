@@ -42,7 +42,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -76,7 +75,6 @@ fun KhatmVersesScreen(
     val lazyState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     var loading by remember { mutableStateOf(false) }
-    val context = LocalContext.current
 
     LaunchedEffect(state.fontSize) {
         sliderState.value = state.fontSize ?: sliderState.value
@@ -211,21 +209,6 @@ fun KhatmVersesScreen(
                     }
                 }
 
-                val detail = Pair(
-                    first = when (state.khatm?.type) {
-                        PlayType.JOZ.name -> PlayType.JOZ
-                        PlayType.HEZB.name -> PlayType.HEZB
-                        PlayType.PAGE.name -> PlayType.PAGE
-                        else -> PlayType.SURAH
-                    },
-                    second = when (state.khatm?.type) {
-                        PlayType.JOZ.name -> state.khatm!!.joz
-                        PlayType.HEZB.name -> state.khatm!!.hezb
-                        PlayType.PAGE.name -> state.khatm!!.page
-                        else -> 0
-                    }
-                )
-
                 AyatComponent(
                     verses = state.verses,
                     lazyState = lazyState,
@@ -353,8 +336,7 @@ fun KhatmVersesScreen(
 
                 QuranPlayer(
                     modifier = Modifier.align(Alignment.BottomCenter),
-                    type = detail.first,
-                    id = detail.second ?: 0
+                    type = PlayType.PLAYLIST(ayats)
                 )
             }
         }

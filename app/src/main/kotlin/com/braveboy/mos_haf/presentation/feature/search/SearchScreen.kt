@@ -261,24 +261,16 @@ fun QuranContent(
         }
 
         if (state.verses.isNotEmpty()) {
+            val list = state.verses.map {
+                Pair(it.sura, it.aya)
+            }
+
             QuranPlayer(
                 modifier = Modifier.align(Alignment.BottomStart),
-                type = PlayType.HEZB,
-                id = state.verses.first().juz
+                type = PlayType.PLAYLIST(list),
             )
         }
     }
-
-    /*if (state.verses.isNotEmpty()) {
-        val list = state.verses.map {
-            Pair(it.sura, it.aya)
-        }
-
-        QuranPlayer(
-            modifier = Modifier.align(Alignment.BottomStart),
-            type = PlayType.PLAYLIST(list),
-        )
-    }*/
 }
 
 

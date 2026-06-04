@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.OptIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
@@ -14,9 +15,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.media3.common.util.UnstableApi
 import com.braveboy.mos_haf.data.local.database.AppDatabase
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.di.appModule
+import com.braveboy.mos_haf.presentation.feature.player.data.AudioCache
 import com.braveboy.mos_haf.presentation.navigation.ScreenNavController
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import kotlinx.coroutines.CoroutineScope
@@ -27,8 +30,16 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.compose.koinInject
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.logger.Level
+import java.io.File
 
 class MainActivity : ComponentActivity() {
+    @OptIn(UnstableApi::class)
+    override fun onDestroy() {
+        super.onDestroy()
+        AudioCache.release()
+        File(cacheDir, "audio_cache").deleteRecursively()
+    }
+
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

@@ -38,21 +38,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
+import com.braveboy.mos_haf.presentation.feature.player.data.provideCacheDataSource
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 import kotlin.math.roundToInt
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuranPlayer(
     modifier: Modifier = Modifier,
     type: PlayType,
-    id: Int,
 ) {
     val context = LocalContext.current
-    val exoPlayer: ExoPlayer = ExoPlayer.Builder(context).build()
+    val exoPlayer: ExoPlayer = ExoPlayer.Builder(context)
+        .setMediaSourceFactory(
+            DefaultMediaSourceFactory(
+                provideCacheDataSource(context)
+            )
+        )
+        .build()
     val controller = koinViewModel<PlayerViewController>()
     val state by controller.state.collectAsState()
     var showSpeedSelector by remember { mutableStateOf(false) }
@@ -97,7 +106,7 @@ fun QuranPlayer(
 
     // لود صفحه اول هنگام شروع
     LaunchedEffect(Unit) {
-        controller.handleIntent(PlayerIntent.Load(type = type, number = id))
+        controller.handleIntent(PlayerIntent.Load(type = type))
     }
 
     // تغییر سرعت (بهره از sliderState قبلی)

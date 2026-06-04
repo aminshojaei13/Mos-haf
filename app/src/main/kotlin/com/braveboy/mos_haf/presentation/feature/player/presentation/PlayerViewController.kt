@@ -90,6 +90,7 @@ class PlayerViewController(
                     }
 
                     Player.STATE_READY -> {
+                        play()
                         startPositionUpdater()
                         _state.update {
                             it.copy(
@@ -133,8 +134,8 @@ class PlayerViewController(
     // دریافت Intent از View
     fun handleIntent(intent: PlayerIntent) {
         when (intent) {
-            is PlayerIntent.Load -> load(type = intent.type, number = intent.number)
-            PlayerIntent.Play -> play()
+            is PlayerIntent.Load -> load(type = intent.type)
+            PlayerIntent.Play -> playAyahFromPlaylist(0)
             PlayerIntent.Pause -> pause()
             PlayerIntent.NextPage -> nextPage()
             PlayerIntent.PreviousPage -> previousPage()
@@ -145,9 +146,9 @@ class PlayerViewController(
         }
     }
 
-    private fun load(type: PlayType, number: Int) {
+    private fun load(type: PlayType) {
         when (type) {
-            PlayType.JOZ -> {
+            /*PlayType.JOZ -> {
                 if (number !in 1..30) {
                     viewModelScope.launch {
                         _effect.send(PlayerEffect.ShowError("جز نامعتبر است (۱ تا ۳۰)"))
@@ -204,12 +205,102 @@ class PlayerViewController(
                     setMediaItem(mediaItem)
                     prepare()
                 }
+            }*/
+            is PlayType.AYAH -> {}
+            is PlayType.PLAYLIST -> {
+                val ayahs = mutableListOf(Pair(1,1))
+
+                Log.d("toni", "load: ${type.ayahs}")
+                type.ayahs.forEach {
+                    if (it.second != 1){
+                        ayahs.add(it)
+                    }
+                }
+                Log.d("toni", "load2: $ayahs")
+                if (ayahs.isEmpty()) {
+                    viewModelScope.launch {
+                        _effect.send(PlayerEffect.ShowError("لیست آیات خالی است"))
+                    }
+                    return
+                }
+
+                // ذخیره پلی‌لیست در state
+                _state.update {
+                    it.copy(
+                        playlist = ayahs,
+                        currentPlaylistIndex = 0
+                    )
+                }
             }
         }
+    }
 
-        /* viewModelScope.launch {
-             _effect.send(PlayerEffect.PageChanged(pageNumber))
-         }*/
+    private fun playAyahFromPlaylist(index: Int) {
+        val playlist = _state.value.playlist
+        if (index !in playlist.indices) {
+            // پایان پلی‌لیست
+            _state.update {
+                it.copy(
+                    isPlaying = false,
+                    isLoading = false
+                )
+            }
+            viewModelScope.launch {
+                _effect.send(PlayerEffect.ShowError("پایان پلی‌لیست"))
+            }
+            return
+        }
+
+        val (surah, ayah) = playlist[index]
+
+        // به‌روزرسانی state
+        _state.update {
+            it.copy(
+                currentPlaylistIndex = index,
+                isLoading = true,
+                isPlaying = false
+            )
+        }
+
+        // بارگذاری و پخش آیه
+        viewModelScope.launch(Dispatchers.Main) {
+            try {
+                val url = playlist.map {
+                    repository.getAyahUrl(it.first, it.second)
+                }
+
+                val mediaItem = url.map {
+                    MediaItem.fromUri(it)
+                }
+                exoPlayer?.apply {
+                    setMediaItems(mediaItem)
+                    prepare()
+                    // توجه: play() در onPlaybackStateChanged بعد از STATE_READY انجام می‌شود
+                }
+            } catch (e: Exception) {
+                Log.d("toni", "playAyahFromPlaylist: $e")
+                viewModelScope.launch(Dispatchers.Main) {
+                    _effect.send(PlayerEffect.ShowError("خطا در پخش آیه ${surah}:${ayah}"))
+                    // پخش آیه بعدی
+                    playNextInPlaylist()
+                }
+            }
+        }
+    }
+
+    // تابع جدید: پخش آیه بعدی در پلی‌لیست
+    private fun playNextInPlaylist() {
+        Log.d("toni", "playNextInPlaylist: ${_state.value.currentPlaylistIndex + 1}")
+        val nextIndex = _state.value.currentPlaylistIndex + 1
+        playAyahFromPlaylist(nextIndex)
+    }
+
+    // تابع جدید: پخش آیه قبلی در پلی‌لیست
+    private fun playPreviousInPlaylist() {
+        val prevIndex = _state.value.currentPlaylistIndex - 1
+        if (prevIndex >= 0) {
+            playAyahFromPlaylist(prevIndex)
+        }
     }
 
     private fun play() {

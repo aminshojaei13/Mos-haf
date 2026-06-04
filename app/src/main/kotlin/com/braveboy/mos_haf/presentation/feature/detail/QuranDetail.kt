@@ -232,14 +232,13 @@ fun QuranDetailScreen(
                     }
                 )
 
-                val list = state.verses.map {
+                val ayats = state.verses.map {
                     Pair(it.sura, it.aya)
                 }
 
                 QuranPlayer(
                     modifier = Modifier.align(Alignment.BottomCenter),
-                    type = PlayType.SURAH,
-                    id = state.verses.first().sura
+                    type = PlayType.PLAYLIST(ayats)
                 )
             }
         }
