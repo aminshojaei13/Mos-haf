@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -60,6 +61,7 @@ fun AyatComponent(
     fontSize: TextUnit,
     suras: List<String>? = null,
     overScrollEnable: Boolean = false,
+    playingIndex: Int = -1,
     bookmarked: (Quran) -> Unit = {},
     changeSura: (String) -> Unit = {},
     forwardItem: @Composable () -> Unit = {},
@@ -123,8 +125,9 @@ fun AyatComponent(
         )
 
         LazyColumn(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             state = lazyState,
+            contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp) // اضافه کردن فاصله در پایین برای پلیر
         ) {
             item {
                 AnimatedVisibility(
@@ -227,6 +230,7 @@ fun AyatComponent(
                         ayaNumber = verse.aya.toString(),
                         fontSize = fontSize,
                         icon = null,
+                        isHighlighted = index == playingIndex
                     )
                 }
             }

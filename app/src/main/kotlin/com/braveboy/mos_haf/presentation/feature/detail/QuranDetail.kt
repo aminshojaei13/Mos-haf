@@ -2,6 +2,7 @@ package com.braveboy.mos_haf.presentation.feature.detail
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DarkMode
@@ -42,6 +44,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,6 +61,7 @@ import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
 import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
+import com.braveboy.mos_haf.presentation.feature.player.presentation.PlayerViewController
 import com.braveboy.mos_haf.presentation.feature.player.presentation.QuranPlayer
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import kotlinx.coroutines.Dispatchers
@@ -70,6 +75,9 @@ fun QuranDetailScreen(
     viewModel: QuranDetailViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val playerController = koinViewModel<PlayerViewController>()
+    val playerState by playerController.state.collectAsState()
+    
     var expandedFontSize by remember { mutableStateOf(false) }
     val sliderState = rememberSliderState(value = 0.5f, steps = 5)
     var fontSize by remember { mutableStateOf(28.sp) }
@@ -100,6 +108,13 @@ fun QuranDetailScreen(
             loading = true
             lazyState.animateScrollToItem(state.lastRead?.start?.aya ?: 0)
             loading = false
+        }
+    }
+    
+    // اسکرول خودکار به آیه در حال پخش
+    LaunchedEffect(playerState.currentPlaylistIndex) {
+        if (playerState.isPlaying) {
+            lazyState.animateScrollToItem(playerState.currentPlaylistIndex + 1)
         }
     }
 
@@ -209,6 +224,7 @@ fun QuranDetailScreen(
                     fontSize = fontSize,
                     suras = state.suraNames,
                     overScrollEnable = true,
+                    playingIndex = if (playerState.isPlaying) playerState.currentPlaylistIndex else -1,
                     bookmarked = {
                         viewModel.saveBookmark(
                             LastReadModel(
@@ -252,14 +268,17 @@ fun VerseItem(
     translationText: String,
     ayaNumber: String,
     fontSize: TextUnit,
-    icon: Int? = null
+    icon: Int? = null,
+    isHighlighted: Boolean = false
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .background(if (isHighlighted) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f) else Color.Transparent)
+            .padding(horizontal = 8.dp, vertical = 16.dp)
             .animateContentSize()
     ) {
         Box {
@@ -277,7 +296,7 @@ fun VerseItem(
                     text = "$arabicText (${ayaNumber.toPersianNumber()})",
                     modifier = Modifier.fillMaxWidth(),
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    color = if (isHighlighted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                     fontSize = fontSize
                 )
             }
@@ -291,7 +310,7 @@ fun VerseItem(
                 .fillMaxWidth()
                 .safeClickable { isExpanded = !isExpanded },
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            color = if (isHighlighted) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             maxLines = if (isExpanded) Int.MAX_VALUE else 1,
             overflow = TextOverflow.Ellipsis
         )

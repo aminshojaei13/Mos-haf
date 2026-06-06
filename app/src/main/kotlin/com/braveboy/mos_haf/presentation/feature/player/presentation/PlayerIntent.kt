@@ -3,10 +3,7 @@ package com.braveboy.mos_haf.presentation.feature.player.presentation
 import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
 
 sealed class PlayerIntent {
-    data class Load(
-        val type: PlayType,
-    ) : PlayerIntent()
-
+    data class Load(val type: PlayType) : PlayerIntent()
     object Play : PlayerIntent()
     object Pause : PlayerIntent()
     object NextPage : PlayerIntent()
@@ -14,7 +11,6 @@ sealed class PlayerIntent {
     data class SeekTo(val position: Long) : PlayerIntent()
     data class ChangeSpeed(val speed: Float) : PlayerIntent()
     object Release : PlayerIntent()
-
-    object NextTrack : PlayerIntent()      // <-- جدید
-    object PreviousTrack : PlayerIntent()  // <-- جدید
+    object NextTrack : PlayerIntent()
+    object PreviousTrack : PlayerIntent()
 }

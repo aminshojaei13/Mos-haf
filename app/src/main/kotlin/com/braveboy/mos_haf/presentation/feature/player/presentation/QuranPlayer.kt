@@ -1,17 +1,24 @@
 package com.braveboy.mos_haf.presentation.feature.player.presentation
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.NavigateBefore
+import androidx.compose.material.icons.automirrored.filled.NavigateNext
 import androidx.compose.material.icons.outlined.PauseCircleOutline
 import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Speed
@@ -26,6 +33,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -38,14 +46,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
 import com.braveboy.mos_haf.presentation.feature.player.data.provideCacheDataSource
-import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
-import kotlin.math.roundToInt
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,214 +62,171 @@ fun QuranPlayer(
     type: PlayType,
 ) {
     val context = LocalContext.current
-    val exoPlayer: ExoPlayer = ExoPlayer.Builder(context)
-        .setMediaSourceFactory(
-            DefaultMediaSourceFactory(
-                provideCacheDataSource(context)
-            )
-        )
-        .build()
     val controller = koinViewModel<PlayerViewController>()
     val state by controller.state.collectAsState()
+    
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(DefaultMediaSourceFactory(provideCacheDataSource(context)))
+            .build()
+    }
+
     var showSpeedSelector by remember { mutableStateOf(false) }
     var isSeeking by remember { mutableStateOf(false) }
     var seekPosition by remember { mutableFloatStateOf(0f) }
 
     @SuppressLint("DefaultLocale")
     fun formatTime(ms: Long): String {
-        val seconds = (ms / 1000) % 60
-        val minutes = (ms / (1000 * 60)) % 60
-        val hours = (ms / (1000 * 60 * 60))
-        return if (hours > 0) {
-            String.format("%02d:%02d:%02d", hours, minutes, seconds)
-        } else {
-            String.format("%02d:%02d", minutes, seconds)
-        }
+        val totalSeconds = ms / 1000
+        val seconds = totalSeconds % 60
+        val minutes = (totalSeconds / 60) % 60
+        return String.format("%02d:%02d", minutes, seconds)
     }
 
-    // ارسال ExoPlayer به ViewModel
-    LaunchedEffect(Unit) {
+    DisposableEffect(exoPlayer) {
         controller.setExoPlayer(exoPlayer)
-    }
-
-    // نمایش خطاها
-    LaunchedEffect(Unit) {
-        controller.effect.collect { effect ->
-            when (effect) {
-                is PlayerEffect.ShowError -> {
-                    android.widget.Toast.makeText(
-                        context,
-                        effect.message,
-                        android.widget.Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-                is PlayerEffect.PageChanged -> {
-                    // می‌توانید صفحه جدید را لاگ کنید یا انیمیشن نمایش دهید
-                }
-            }
+        onDispose {
+            controller.handleIntent(PlayerIntent.Release)
         }
     }
 
-    // لود صفحه اول هنگام شروع
-    LaunchedEffect(Unit) {
+    LaunchedEffect(type) {
         controller.handleIntent(PlayerIntent.Load(type = type))
     }
 
-    // تغییر سرعت (بهره از sliderState قبلی)
-    LaunchedEffect(Unit) {
-        // این بخش رو می‌تونید با تنظیمات سرعت در ViewModel هماهنگ کنید
-    }
-
-    // به‌روزرسانی خودکار موقعیت پخش (برای نمایش روی Slider)
-    LaunchedEffect(state.isPlaying, isSeeking) {
-        while (state.isPlaying && !isSeeking) {
-            delay(500)
-            // مقدار seekPosition به‌روز می‌شه اما فقط وقتی در حال Seek نیستیم
-            if (!isSeeking && state.duration > 0) {
-                seekPosition = state.currentPosition.toFloat() / state.duration.toFloat()
-            }
+    LaunchedEffect(state.isPlaying, isSeeking, state.currentPosition) {
+        if (!isSeeking && state.duration > 0) {
+            seekPosition = state.currentPosition.toFloat() / state.duration.toFloat()
         }
     }
 
-    // کنترل‌های دستی
-    Column(
+    Box(
         modifier = modifier
-            .padding(horizontal = 8.dp)
-            .background(
-                color = MaterialTheme.colorScheme.primary,
-                shape = MaterialTheme.shapes.extraLarge
-            )
-            .padding(vertical = 8.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        contentAlignment = Alignment.BottomCenter
     ) {
-        // دکمه پخش/مکث و سرعت
-        Row(
-            modifier = modifier
-                .padding(horizontal = 8.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
                 .background(
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = MaterialTheme.shapes.extraLarge
-                ),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.95f),
+                    shape = MaterialTheme.shapes.large
+                )
+                .padding(horizontal = 12.dp, vertical = 6.dp)
         ) {
-            IconButton(
-                onClick = {
-                    if (state.isLoading) return@IconButton
-                    if (state.isPlaying) {
-                        controller.handleIntent(PlayerIntent.Pause)
-                    } else {
-                        controller.handleIntent(PlayerIntent.Play)
-                    }
-                }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                when {
-                    state.isLoading -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    }
-
-                    state.isPlaying -> {
+                // Speed selector
+                Box {
+                    IconButton(onClick = { showSpeedSelector = true }, modifier = Modifier.size(32.dp)) {
                         Icon(
-                            imageVector = Icons.Outlined.PauseCircleOutline,
-                            contentDescription = "Pause",
+                            imageVector = Icons.Outlined.Speed,
+                            contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
-
-                    else -> {
-                        Icon(
-                            imageVector = Icons.Outlined.PlayCircleOutline,
-                            contentDescription = "Play",
-                            tint = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
-                }
-            }
-            AnimatedVisibility(state.isPlaying) {
-                IconButton(
-                    onClick = { showSpeedSelector = true }
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Speed,
-                        contentDescription = "Speed",
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
-            }
-
-            AnimatedVisibility(state.isPlaying) {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    // اسلایدر برای Seek دستی (عقب و جلو کردن صدا)
-                    Slider(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        value = if (isSeeking) seekPosition else {
-                            state.currentPosition.toFloat() / state.duration.toFloat()
-                        },
-                        onValueChange = { newValue ->
-                            isSeeking = true
-                            seekPosition = newValue
-                        },
-                        onValueChangeFinished = {
-                            // وقتی کاربر انگشت را برداشت، Seek انجام شود
-                            val seekToMs = (seekPosition * state.duration).roundToInt().toLong()
-                            controller.handleIntent(PlayerIntent.SeekTo(seekToMs))
-                            isSeeking = false
-                        },
-                        colors = SliderDefaults.colors(
-                            thumbColor = Color.Transparent,
-                            activeTrackColor = MaterialTheme.colorScheme.secondary,
-                            inactiveTrackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
-                        )
-                    )
-
-                    //Spacer(modifier = Modifier.height(4.dp))
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    DropdownMenu(
+                        expanded = showSpeedSelector,
+                        onDismissRequest = { showSpeedSelector = false }
                     ) {
-                        Text(
-                            text = formatTime(state.currentPosition),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                        )
+                        listOf(0.75f, 1.0f, 1.25f, 1.5f).forEach { speed ->
+                            DropdownMenuItem(
+                                text = { Text("${speed}x") },
+                                onClick = {
+                                    controller.handleIntent(PlayerIntent.ChangeSpeed(speed))
+                                    showSpeedSelector = false
+                                }
+                            )
+                        }
+                    }
+                }
 
-                        Text(
-                            text = formatTime(state.duration),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                // Controls
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = { controller.handleIntent(PlayerIntent.PreviousTrack) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.NavigateBefore,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            if (state.isLoading) return@IconButton
+                            if (state.isPlaying) controller.handleIntent(PlayerIntent.Pause)
+                            else controller.handleIntent(PlayerIntent.Play)
+                        },
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        if (state.isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = if (state.isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircleOutline,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(40.dp)
+                            )
+                        }
+                    }
+
+                    IconButton(
+                        onClick = { controller.handleIntent(PlayerIntent.NextTrack) },
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.NavigateNext,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(24.dp)
                         )
                     }
                 }
-            }
-        }
 
-        // DropdownMenu برای سرعت (می‌توانید کامل‌تر کنید)
-        DropdownMenu(
-            expanded = showSpeedSelector,
-            onDismissRequest = { showSpeedSelector = false },
-        ) {
-            val speeds = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f)
-            speeds.forEach { speed ->
-                DropdownMenuItem(
-                    text = { Text("${speed}x") },
-                    onClick = {
-                        controller.handleIntent(PlayerIntent.ChangeSpeed(speed))
-                        showSpeedSelector = false
-                    }
+                // Time display
+                Text(
+                    text = formatTime(state.currentPosition),
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontSize = 11.sp
+                )
+            }
+
+            // Slim slider
+            AnimatedVisibility(
+                visible = state.duration > 0,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Slider(
+                    value = seekPosition.coerceIn(0f, 1f),
+                    onValueChange = {
+                        isSeeking = true
+                        seekPosition = it
+                    },
+                    onValueChangeFinished = {
+                        controller.handleIntent(PlayerIntent.SeekTo((seekPosition * state.duration).toLong()))
+                        isSeeking = false
+                    },
+                    modifier = Modifier.height(24.dp),
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.Transparent,
+                        activeTrackColor = MaterialTheme.colorScheme.secondary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
+                    )
                 )
             }
         }
