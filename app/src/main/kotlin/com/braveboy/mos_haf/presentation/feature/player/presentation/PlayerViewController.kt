@@ -77,10 +77,6 @@ class PlayerViewController(
                     Player.STATE_BUFFERING -> _state.update { it.copy(isLoading = true) }
                     Player.STATE_READY -> {
                         _state.update {
-                            Log.d(
-                                "toni",
-                                "observePlayerEvents: ${exoPlayer?.playlistMetadata?.durationMs}"
-                            )
                             it.copy(
                                 isLoading = false,
                             )
@@ -133,7 +129,7 @@ class PlayerViewController(
                 return
             }
 
-            _state.update { it.copy(playlist = ayahs, currentPlaylistIndex = 0) }
+            _state.update { it.copy(playlist = ayahs, currentPlaylistIndex = type.startIndex) }
 
             viewModelScope.launch(Dispatchers.Main) {
                 try {
@@ -142,6 +138,9 @@ class PlayerViewController(
                     }
                     exoPlayer?.apply {
                         setMediaItems(mediaItems)
+                        if (type.startIndex in ayahs.indices) {
+                            seekTo(type.startIndex, 0)
+                        }
                         prepare()
                     }
                 } catch (e: Exception) {

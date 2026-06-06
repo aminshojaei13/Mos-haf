@@ -50,6 +50,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSliderState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,6 +73,8 @@ import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.presentation.common_compose.AyatComponent
 import com.braveboy.mos_haf.presentation.feature.detail.toPersianWord
 import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
+import com.braveboy.mos_haf.presentation.feature.player.model.PlayerState
+import com.braveboy.mos_haf.presentation.feature.player.presentation.PlayerViewController
 import com.braveboy.mos_haf.presentation.feature.player.presentation.QuranPlayer
 import com.braveboy.mos_haf.presentation.feature.search.SearchIntent.SaveBookmark
 import org.koin.androidx.compose.koinViewModel
@@ -81,6 +84,8 @@ import org.koin.androidx.compose.koinViewModel
 fun SearchScreen(navController: NavController) {
     val viewModel = koinViewModel<SearchViewModel>()
     val state = viewModel.state.collectAsStateWithLifecycle()
+    val playerController = koinViewModel<PlayerViewController>()
+    val playerState by playerController.state.collectAsState()
     val sliderState = rememberSliderState(value = 0.5f, steps = 5)
     var expandedFontSize by remember { mutableStateOf(false) }
     var fontSize by remember { mutableStateOf(28.sp) }
@@ -188,6 +193,7 @@ fun SearchScreen(navController: NavController) {
         QuranContent(
             modifier = Modifier.padding(paddingValues),
             state = state.value,
+            playerState = playerState,
             onIntent = {
                 viewModel.handleIntent(it)
             },
@@ -200,6 +206,7 @@ fun SearchScreen(navController: NavController) {
 @Composable
 fun QuranContent(
     state: SearchState,
+    playerState: PlayerState,
     onIntent: (SearchIntent) -> Unit,
     modifier: Modifier = Modifier,
     fontSize: TextUnit? = null
@@ -209,6 +216,11 @@ fun QuranContent(
             .fillMaxSize()
     ) {
         val lazyState = rememberLazyListState()
+
+        // اسکرول خودکار به آیه در حال پخش
+        LaunchedEffect(playerState.currentPlaylistIndex) {
+            lazyState.animateScrollToItem(playerState.currentPlaylistIndex + 1)
+        }
 
         LaunchedEffect(lazyState.firstVisibleItemIndex) {
             if (state.verses.isNotEmpty() && lazyState.layoutInfo.visibleItemsInfo.last().index == state.verses.lastIndex) {
@@ -238,6 +250,7 @@ fun QuranContent(
                     translations = state.translations,
                     fontSize = fontSize ?: 28.sp,
                     overScrollEnable = false,
+                    playingIndex = if (playerState.isPlaying) playerState.currentPlaylistIndex else -1,
                     bookmarked = {
                         onIntent(
                             SaveBookmark(
@@ -265,9 +278,13 @@ fun QuranContent(
                 Pair(it.sura, it.aya)
             }
 
+            val startIndex = state.lastRead?.start?.let { lastRead ->
+                state.verses.indexOfFirst { it.sura == lastRead.sura && it.aya == lastRead.aya }
+            }.takeIf { it != null && it != -1 } ?: 0
+
             QuranPlayer(
                 modifier = Modifier.align(Alignment.BottomStart),
-                type = PlayType.PLAYLIST(list),
+                type = PlayType.PLAYLIST(list, startIndex),
             )
         }
     }
@@ -800,4 +817,3 @@ fun JozOrHezbDropdown(
         }
     }
 }
-

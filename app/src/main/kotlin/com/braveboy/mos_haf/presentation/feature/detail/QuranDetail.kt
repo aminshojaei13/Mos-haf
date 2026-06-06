@@ -251,10 +251,14 @@ fun QuranDetailScreen(
                 val ayats = state.verses.map {
                     Pair(it.sura, it.aya)
                 }
+                
+                val startIndex = state.lastRead?.start?.let { lastRead ->
+                    state.verses.indexOfFirst { it.sura == lastRead.sura && it.aya == lastRead.aya }
+                }.takeIf { it != null && it != -1 } ?: 0
 
                 QuranPlayer(
                     modifier = Modifier.align(Alignment.BottomCenter),
-                    type = PlayType.PLAYLIST(ayats)
+                    type = PlayType.PLAYLIST(ayats, startIndex)
                 )
             }
         }
