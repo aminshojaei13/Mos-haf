@@ -1,7 +1,7 @@
 package com.braveboy.mos_haf.presentation.feature.player.presentation
 
 import android.annotation.SuppressLint
-import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -64,7 +64,7 @@ fun QuranPlayer(
     val context = LocalContext.current
     val controller = koinViewModel<PlayerViewController>()
     val state by controller.state.collectAsState()
-    
+
     val exoPlayer = remember {
         ExoPlayer.Builder(context)
             .setMediaSourceFactory(DefaultMediaSourceFactory(provideCacheDataSource(context)))
@@ -87,6 +87,13 @@ fun QuranPlayer(
         controller.setExoPlayer(exoPlayer)
         onDispose {
             controller.handleIntent(PlayerIntent.Release)
+        }
+    }
+
+    LaunchedEffect(state.errorMessage) {
+        if (!state.errorMessage.isNullOrEmpty()) {
+            Toast.makeText(context, state.errorMessage, Toast.LENGTH_LONG)
+                .show()
         }
     }
 
@@ -122,7 +129,10 @@ fun QuranPlayer(
             ) {
                 // Speed selector
                 Box {
-                    IconButton(onClick = { showSpeedSelector = true }, modifier = Modifier.size(32.dp)) {
+                    IconButton(
+                        onClick = { showSpeedSelector = true },
+                        modifier = Modifier.size(32.dp)
+                    ) {
                         Icon(
                             imageVector = Icons.Outlined.Speed,
                             contentDescription = null,

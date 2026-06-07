@@ -4,11 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
-import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.ExoPlayer
-import com.braveboy.mos_haf.data.repository.HezbTimeRepository
 import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
 import com.braveboy.mos_haf.presentation.feature.player.data.PlayerRepository
 import com.braveboy.mos_haf.presentation.feature.player.model.PlayerState
@@ -25,7 +24,6 @@ import kotlinx.coroutines.launch
 
 class PlayerViewController(
     private val repository: PlayerRepository,
-    private val getHezbTimeRepository: HezbTimeRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(PlayerState())
@@ -76,6 +74,7 @@ class PlayerViewController(
                 when (playbackState) {
                     Player.STATE_BUFFERING -> _state.update { it.copy(isLoading = true) }
                     Player.STATE_READY -> {
+                        Log.d("toni", "STATE_READY")
                         _state.update {
                             it.copy(
                                 isLoading = false,
@@ -85,12 +84,39 @@ class PlayerViewController(
                     }
 
                     Player.STATE_ENDED -> {
+                        Log.d("toni", "STATE_ENDED")
                         _state.update { it.copy(isPlaying = false) }
                         stopPositionUpdater()
                     }
 
                     Player.STATE_IDLE -> {
+                        Log.d("toni", "STATE_IDLE")
                         _state.update { it.copy(isLoading = false, isPlaying = false) }
+                    }
+                }
+            }
+
+            override fun onPlayerError(error: PlaybackException) {
+                when (error.errorCode) {
+
+                    PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_FAILED -> {
+                        Log.e("toni", "Network connection failed")
+                        _state.update { it.copy(errorMessage = "عدم اتصال اینترنت") }
+                    }
+
+                    PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND -> {
+                        Log.e("ExoPlayer", "File not found")
+                        _state.update { it.copy(errorMessage = "فایل پیدا نشد") }
+                    }
+
+                    PlaybackException.ERROR_CODE_DECODING_FAILED -> {
+                        Log.e("ExoPlayer", "Decoder error")
+                        _state.update { it.copy(errorMessage = "خطایی رخ داده است") }
+                    }
+
+                    else -> {
+                        Log.e("ExoPlayer", "Other error")
+                        _state.update { it.copy(errorMessage = "خطایی رخ داده است") }
                     }
                 }
             }

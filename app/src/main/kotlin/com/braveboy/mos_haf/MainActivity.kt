@@ -31,6 +31,7 @@ import org.koin.compose.koinInject
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.core.logger.Level
 import java.io.File
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     @OptIn(UnstableApi::class)
@@ -44,6 +45,26 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         installSplashScreen()
+
+        try {
+            val audioCache = File(this.applicationContext.cacheDir, "audio_cache")
+            if (audioCache.exists()) {
+                // Last modified time
+                val lastModified = audioCache.lastModified()
+                // 24 hours in milliseconds
+                val expiryTime = TimeUnit.HOURS.toMillis(24)
+                val isExpired = System.currentTimeMillis() - lastModified > expiryTime
+                if (isExpired) {
+                    if (audioCache.isDirectory) {
+                        audioCache.deleteRecursively()
+                    } else {
+                        audioCache.delete()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.d("xavi", "onCreate: $e")
+        }
 
         try {
             startKoin {

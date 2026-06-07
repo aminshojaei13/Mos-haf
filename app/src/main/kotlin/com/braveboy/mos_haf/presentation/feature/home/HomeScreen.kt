@@ -163,7 +163,7 @@ fun HomeScreen(
                         textAlign = TextAlign.Start
                     )
 
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(8.dp))
 
 
                     Text(
@@ -173,6 +173,15 @@ fun HomeScreen(
                     )
 
                     Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        text = "صوت برنامه به صورت آنلاین و از آدرس alquran.cloud دریافت می‌شود.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Start
+                    )
+
+                    Spacer(Modifier.height(4.dp))
 
                     val annotatedText = buildAnnotatedString {
                         withStyle(
