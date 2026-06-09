@@ -1,6 +1,7 @@
 package com.braveboy.mos_haf.presentation.feature.khatm.khatmverses
 
 import android.util.Log
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -62,6 +63,7 @@ import com.braveboy.mos_haf.presentation.feature.player.model.PlayerState
 import com.braveboy.mos_haf.presentation.feature.player.presentation.PlayerViewController
 import com.braveboy.mos_haf.presentation.feature.player.presentation.QuranPlayer
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -121,11 +123,19 @@ fun KhatmVersesContent(
     }
 
     LaunchedEffect(state.lastRead?.start) {
-        state.lastRead?.start?.let {
+        if (state.lastRead?.start != null) {
             loading = true
-            lazyState.animateScrollToItem(it.aya)
-            loading = false
         }
+    }
+
+    LaunchedEffect (loading){
+            scope.launch {
+                lazyState.animateScrollToItem(state.lastRead?.start?.aya ?: 0)
+            }
+    }
+
+    if (!lazyState.isScrollInProgress && loading) {
+        loading = false
     }
 
     // اسکرول خودکار به آیه در حال پخش
@@ -143,12 +153,13 @@ fun KhatmVersesContent(
                     val type = state.khatmDetail?.type
                     val khatmInfo = state.khatm
                     val titleSuffix = when (type) {
-                        KhatmType.JOZ.name -> "جز " + (khatmInfo?.joz?.toString() ?: "").toPersianNumber()
-                        KhatmType.HEZB.name -> "حزب " + (khatmInfo?.hezb?.toString() ?: "").toPersianNumber()
-                        KhatmType.PAGE.name -> "صفحه " + (khatmInfo?.page?.toString() ?: "").toPersianNumber()
+                        KhatmType.JOZ.name -> "- جز " + (khatmInfo?.joz?.toString() ?: "").toPersianNumber()
+                        KhatmType.HEZB.name -> "- حزب " + (khatmInfo?.hezb?.toString() ?: "").toPersianNumber()
+                        KhatmType.PAGE.name -> "- صفحه " + (khatmInfo?.page?.toString() ?: "").toPersianNumber()
                         else -> ""
                     }
                     Text(
+                        modifier = Modifier.basicMarquee(),
                         text = "$khatmName $titleSuffix".trim(),
                         style = MaterialTheme.typography.titleLarge
                     )
@@ -227,8 +238,11 @@ fun KhatmVersesContent(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             if (state.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(64.dp).align(Alignment.Center))
+                CircularProgressIndicator(modifier = Modifier
+                    .size(64.dp)
+                    .align(Alignment.Center))
             } else {
+                Log.d("toni", "loa: $loading")
                 if (loading) {
                     Dialog(onDismissRequest = { },) {
                         CircularProgressIndicator(modifier = Modifier.size(48.dp))

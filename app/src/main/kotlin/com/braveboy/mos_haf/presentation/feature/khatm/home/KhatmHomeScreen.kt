@@ -3,6 +3,7 @@ package com.braveboy.mos_haf.presentation.feature.khatm.home
 import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -218,8 +219,9 @@ fun KhatmHomeScreen(navController: NavController) {
                                 Text(
                                     modifier = Modifier
                                         .align(Alignment.Center)
-                                        .fillMaxWidth()
-                                        .padding(top = 16.dp, bottom = 8.dp),
+                                        .fillMaxWidth(0.6F)
+                                        .padding(top = 16.dp, bottom = 8.dp)
+                                        .basicMarquee(),
                                     text = item.name,
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.bodyLarge
