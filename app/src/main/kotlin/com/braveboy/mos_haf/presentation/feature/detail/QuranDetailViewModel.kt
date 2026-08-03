@@ -10,6 +10,7 @@ import com.braveboy.mos_haf.AppConstants.FONT_SIZE
 import com.braveboy.mos_haf.AppConstants.TRANSLATION_FONT_SIZE
 import com.braveboy.mos_haf.AppConstants.THEME_TYPE
 import com.braveboy.mos_haf.AppConstants.RECITER
+import com.braveboy.mos_haf.AppConstants.VIEW_COUNT
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
@@ -40,6 +41,7 @@ class QuranDetailViewModel(
         getReciter()
         getFontSize()
         getTranslationFontSize()
+        incrementViewCount()
         savedStateHandle.toRoute<QuranDetail>().let { detail ->
             if (detail.fromLast) {
                 _state.update { it.copy(suraName = detail.sura) }
@@ -197,6 +199,13 @@ class QuranDetailViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val fontSize = preferencesRepository.readSetting(TRANSLATION_FONT_SIZE)
             _state.update { it.copy(translationFontSize = fontSize?.toFloatOrNull()) }
+        }
+    }
+
+    private fun incrementViewCount() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val count = preferencesRepository.readSetting(VIEW_COUNT)?.toIntOrNull() ?: 0
+            preferencesRepository.saveSetting(VIEW_COUNT, (count + 1).toString())
         }
     }
 }

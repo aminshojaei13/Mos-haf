@@ -1,5 +1,7 @@
 package com.braveboy.mos_haf.presentation.feature.home
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,7 +23,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -31,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,11 +49,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
@@ -70,15 +78,18 @@ import com.braveboy.mos_haf.ui.theme.ThemeType
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
 ) {
+    val context = LocalContext.current
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
     val saveAudioSetting by viewModel.saveAudio.collectAsState()
+    val showReviewDialog by viewModel.showReviewDialog.collectAsState()
 
     var showSaveAudioDialog by remember { mutableStateOf(false) }
 
@@ -90,6 +101,16 @@ fun HomeScreen(
 
     LaunchedEffect(true) {
         viewModel.getLastRead()
+    }
+
+    if (true) {
+        MarketReviewDialog(
+            onDismiss = { viewModel.dismissReviewDialog() },
+            onConfirm = { market ->
+                openMarketForReview(context, market)
+                viewModel.setReviewShown()
+            }
+        )
     }
 
     Scaffold(
@@ -617,5 +638,102 @@ enum class Tile {
 fun HomeScreenPreview() {
     MoshafTheme(ThemeType.LIGHT) {
         HomeScreen(rememberNavController())
+    }
+}
+
+@Composable
+fun MarketReviewDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (market: String) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = {
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(48.dp)
+            )
+        },
+        title = {
+            Text(
+                text = "حمایت از ما",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        text = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "با ثبت نظر و امتیاز در مارکت‌ها، به ما در بهبود این اپلیکیشن قرآنی کمک کنید.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    MarketButton(
+                        name = "کافه بازار",
+                        onClick = { onConfirm("com.farsitel.bazaar") }
+                    )
+                    MarketButton(
+                        name = "مایکت",
+                        onClick = { onConfirm("ir.mservices.market") }
+                    )
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("بعداً")
+            }
+        },
+        shape = RoundedCornerShape(24.dp)
+    )
+}
+
+@Composable
+fun MarketButton(
+    name: String,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier.padding(4.dp)
+    ) {
+        Text(text = name)
+    }
+}
+
+fun openMarketForReview(context: Context, marketPackage: String) {
+    val packageName = context.packageName
+    val uri = when (marketPackage) {
+        "com.farsitel.bazaar" -> "bazaar://details?id=$packageName".toUri()
+        "ir.mservices.market" -> "myket://comment?id=$packageName".toUri()
+        else -> "market://details?id=$packageName".toUri()
+    }
+
+    val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+        setPackage(marketPackage)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    try {
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        val webUri = when (marketPackage) {
+            "com.farsitel.bazaar" -> "bazaar://details?id=$packageName".toUri()
+            "ir.mservices.market" -> "https://myket.ir/app/$packageName".toUri()
+            else -> "https://play.google.com/store/apps/details?id=$packageName".toUri()
+        }
+        context.startActivity(Intent(Intent.ACTION_VIEW, webUri))
     }
 }
