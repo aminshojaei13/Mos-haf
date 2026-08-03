@@ -21,8 +21,13 @@ class HomeViewModel(
 
     private val _theme = MutableStateFlow(false)
     val theme: StateFlow<Boolean> = _theme.asStateFlow()
+
+    private val _saveAudio = MutableStateFlow<Boolean?>(null)
+    val saveAudio: StateFlow<Boolean?> = _saveAudio.asStateFlow()
+
     init {
         getTheme()
+        getSaveAudio()
     }
 
     fun getTheme() {
@@ -30,6 +35,20 @@ class HomeViewModel(
             preferencesRepository.readSettingAsFlow("theme").collect { theme ->
                 _theme.value = theme.toBoolean()
             }
+        }
+    }
+
+    fun getSaveAudio() {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.readSettingAsFlow("save_audio").collect { save ->
+                _saveAudio.value = save?.toBoolean()
+            }
+        }
+    }
+
+    fun saveAudioSetting(save: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting("save_audio", save.toString())
         }
     }
 

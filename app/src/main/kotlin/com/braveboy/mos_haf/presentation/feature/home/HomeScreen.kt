@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Badge
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -84,7 +83,16 @@ fun HomeScreen(
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
     val themeMode by viewModel.theme.collectAsState()
+    val saveAudioSetting by viewModel.saveAudio.collectAsState()
     val scope = rememberCoroutineScope()
+
+    var showSaveAudioDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(saveAudioSetting) {
+        if (saveAudioSetting == null) {
+            showSaveAudioDialog = true
+        }
+    }
 
     LaunchedEffect(true) {
         viewModel.getLastRead()
@@ -132,6 +140,73 @@ fun HomeScreen(
     ) { paddingValues ->
         val uriHandler = LocalUriHandler.current
         var showDialog by remember { mutableStateOf(false) }
+
+        AnimatedVisibility(showSaveAudioDialog) {
+            Dialog(
+                onDismissRequest = {
+                    showSaveAudioDialog = false
+                    viewModel.saveAudioSetting(false)
+                }
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .clip(MaterialTheme.shapes.large)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "مدیریت حافظه فایل‌های صوتی",
+                        style = MaterialTheme.typography.titleLarge,
+                        textAlign = TextAlign.Start
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Text(
+                        text = "برای راحتی شما، فایل‌های صوتی تلاوت‌های شنیده شده در حافظه موقت ذخیره می‌شوند. آیا مایلید این فایل‌ها برای استفاده آفلاین در آینده باقی بمانند؟ در صورت انتخاب «خیر»، فایل‌ها برای جلوگیری از پر شدن حافظه گوشی، به طور خودکار پاک می‌شوند.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Start
+                    )
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                showSaveAudioDialog = false
+                                viewModel.saveAudioSetting(false)
+                            }
+                        ) {
+                            Text(
+                                text = "خیر، حذف شود",
+                                style = MaterialTheme.typography.bodySmall,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        OutlinedButton(
+                            onClick = {
+                                showSaveAudioDialog = false
+                                viewModel.saveAudioSetting(true)
+                            }
+                        ) {
+                            Text(
+                                text = "بله، ذخیره شود",
+                                style = MaterialTheme.typography.bodySmall,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         AnimatedVisibility(showDialog) {
             Dialog(

@@ -25,6 +25,8 @@ import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.compose.koinInject
@@ -34,37 +36,24 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
+    private val preferencesRepository: PreferencesRepository by inject()
+
     @OptIn(UnstableApi::class)
     override fun onDestroy() {
         super.onDestroy()
         AudioCache.release()
-        File(cacheDir, "audio_cache").deleteRecursively()
+        runBlocking {
+            val saveAudio = preferencesRepository.readSetting("save_audio")?.toBoolean() ?: false
+            if (!saveAudio) {
+                File(cacheDir, "audio_cache").deleteRecursively()
+            }
+        }
     }
 
     @SuppressLint("CoroutineCreationDuringComposition")
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         installSplashScreen()
-
-        try {
-            val audioCache = File(this.applicationContext.cacheDir, "audio_cache")
-            if (audioCache.exists()) {
-                // Last modified time
-                val lastModified = audioCache.lastModified()
-                // 24 hours in milliseconds
-                val expiryTime = TimeUnit.HOURS.toMillis(24)
-                val isExpired = System.currentTimeMillis() - lastModified > expiryTime
-                if (isExpired) {
-                    if (audioCache.isDirectory) {
-                        audioCache.deleteRecursively()
-                    } else {
-                        audioCache.delete()
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            Log.d("xavi", "onCreate: $e")
-        }
 
         try {
             startKoin {
@@ -78,6 +67,23 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val saveAudio = preferencesRepository.readSetting("save_audio")?.toBoolean() ?: false
+                if (!saveAudio) {
+                    val audioCache = File(this@MainActivity.cacheDir, "audio_cache")
+                    if (audioCache.exists()) {
+                        val lastModified = audioCache.lastModified()
+                        val expiryTime = TimeUnit.HOURS.toMillis(24)
+                        val isExpired = System.currentTimeMillis() - lastModified > expiryTime
+                        if (isExpired) {
+                            audioCache.deleteRecursively()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.d("xavi", "cache cleanup: $e")
+            }
+
             try {
                 Log.d("QuranApplication", "Initializing database...")
                 val database = AppDatabase.getInstance(this@MainActivity)
