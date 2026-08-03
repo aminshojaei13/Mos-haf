@@ -7,10 +7,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.braveboy.mos_haf.AppConstants.BOOKMARK
 import com.braveboy.mos_haf.AppConstants.FONT_SIZE
+import com.braveboy.mos_haf.AppConstants.TRANSLATION_FONT_SIZE
+import com.braveboy.mos_haf.AppConstants.THEME_TYPE
+import com.braveboy.mos_haf.AppConstants.RECITER
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
+import com.braveboy.mos_haf.presentation.feature.player.data.Reciter
+import com.braveboy.mos_haf.ui.theme.ThemeType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +36,10 @@ class QuranDetailViewModel(
 
     init {
         getTheme()
+        getThemeType()
+        getReciter()
         getFontSize()
+        getTranslationFontSize()
         savedStateHandle.toRoute<QuranDetail>().let { detail ->
             if (detail.fromLast) {
                 _state.update { it.copy(suraName = detail.sura) }
@@ -123,6 +131,45 @@ class QuranDetailViewModel(
     fun saveTheme(isDark: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             preferencesRepository.saveSetting("theme", isDark.toString())
+            saveThemeType(if (isDark) ThemeType.DARK else ThemeType.LIGHT)
+        }
+    }
+
+    fun saveThemeType(themeType: ThemeType) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting(THEME_TYPE, themeType.name)
+        }
+    }
+
+    fun saveReciter(reciter: Reciter) {
+        _state.update { it.copy(selectedReciter = reciter) }
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting(RECITER, reciter.name)
+        }
+    }
+
+    fun getReciter() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val reciterName = preferencesRepository.readSetting(RECITER)
+            val reciter = try {
+                Reciter.valueOf(reciterName.orEmpty())
+            } catch (e: Exception) {
+                Reciter.ALAFASY
+            }
+            _state.update { it.copy(selectedReciter = reciter) }
+        }
+    }
+
+    fun getThemeType() {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.readSettingAsFlow(THEME_TYPE).collect { themeName ->
+                val type = try {
+                    ThemeType.valueOf(themeName.orEmpty())
+                } catch (e: Exception) {
+                    if (state.value.isDarkMode) ThemeType.DARK else ThemeType.LIGHT
+                }
+                _state.update { it.copy(themeType = type) }
+            }
         }
     }
 
@@ -137,6 +184,19 @@ class QuranDetailViewModel(
             val fontSize = preferencesRepository.readSetting(FONT_SIZE)
             _state.update { it.copy(fontSize = fontSize?.toFloatOrNull()) }
             Log.d("xavi", "getFontSize: ${state.value.fontSize}")
+        }
+    }
+
+    fun saveTranslationFontSize(fontSize: Float) {
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting(TRANSLATION_FONT_SIZE, fontSize.toString())
+        }
+    }
+
+    fun getTranslationFontSize() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val fontSize = preferencesRepository.readSetting(TRANSLATION_FONT_SIZE)
+            _state.update { it.copy(translationFontSize = fontSize?.toFloatOrNull()) }
         }
     }
 }

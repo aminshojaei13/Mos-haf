@@ -101,16 +101,21 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            var isDark by remember { mutableStateOf(false) }
+            var themeType by remember { mutableStateOf(com.braveboy.mos_haf.ui.theme.ThemeType.LIGHT) }
             val pref = koinInject<PreferencesRepository>()
 
-            LaunchedEffect(isDark) {
-                pref.readSettingAsFlow("theme").collect {
-                    isDark = it.toBoolean()
+            LaunchedEffect(Unit) {
+                pref.readSettingAsFlow(AppConstants.THEME_TYPE).collect { themeName ->
+                    themeType = try {
+                        com.braveboy.mos_haf.ui.theme.ThemeType.valueOf(themeName.orEmpty())
+                    } catch (e: Exception) {
+                        val isDark = pref.readSetting("theme").toBoolean()
+                        if (isDark) com.braveboy.mos_haf.ui.theme.ThemeType.DARK else com.braveboy.mos_haf.ui.theme.ThemeType.LIGHT
+                    }
                 }
             }
 
-            MoshafTheme(isDark) {
+            MoshafTheme(themeType) {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {

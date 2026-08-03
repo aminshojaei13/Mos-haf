@@ -284,7 +284,7 @@ fun QuranContent(
 
             QuranPlayer(
                 modifier = Modifier.align(Alignment.BottomStart),
-                type = PlayType.PLAYLIST(list, startIndex),
+                type = PlayType.PLAYLIST(list, startIndex, state.selectedReciter.id),
             )
         }
     }

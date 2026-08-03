@@ -1,6 +1,7 @@
 package com.braveboy.mos_haf.presentation.feature.khatm.khatmverses
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,10 +60,13 @@ import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
 import com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail.KhatmType
 import com.braveboy.mos_haf.presentation.feature.khatm.model.KhatmVersesModel
 import com.braveboy.mos_haf.presentation.feature.player.data.PlayType
+import com.braveboy.mos_haf.presentation.feature.player.data.Reciter
 import com.braveboy.mos_haf.presentation.feature.player.model.PlayerState
 import com.braveboy.mos_haf.presentation.feature.player.presentation.PlayerViewController
 import com.braveboy.mos_haf.presentation.feature.player.presentation.QuranPlayer
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
+import com.braveboy.mos_haf.ui.theme.ThemeType
+import androidx.compose.material3.DropdownMenuItem
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -80,6 +84,7 @@ fun KhatmVersesScreen(
         playerState = playerState,
         onNavigateUp = { navController.navigateUp() },
         onSaveFontSize = { viewModel.saveFontSize(it) },
+        onSaveReciter = { viewModel.saveReciter(it) },
         onSaveTheme = { viewModel.saveTheme(it) },
         onSaveBookmark = { viewModel.saveBookmark(it) },
         onLoadAnotherVerse = { viewModel.handleIntent(KhatmVersesIntent.LoadAnotherVerse(it)) },
@@ -94,6 +99,7 @@ fun KhatmVersesContent(
     playerState: PlayerState,
     onNavigateUp: () -> Unit,
     onSaveFontSize: (Float) -> Unit,
+    onSaveReciter: (Reciter) -> Unit,
     onSaveTheme: (Boolean) -> Unit,
     onSaveBookmark: (LastReadModel) -> Unit,
     onLoadAnotherVerse: (Int) -> Unit,
@@ -224,6 +230,46 @@ fun KhatmVersesContent(
                             Slider(
                                 state = sliderState,
                             )
+
+                            Spacer(Modifier.height(16.dp))
+
+                            Text(
+                                text = "انتخاب قاری",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            var expandedReciter by remember { mutableStateOf(false) }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .safeClickable { expandedReciter = true }
+                                    .background(
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        MaterialTheme.shapes.small
+                                    )
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = state.selectedReciter.displayName,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                DropdownMenu(
+                                    expanded = expandedReciter,
+                                    onDismissRequest = { expandedReciter = false }
+                                ) {
+                                    Reciter.entries.forEach { reciter ->
+                                        DropdownMenuItem(
+                                            text = { Text(reciter.displayName) },
+                                            onClick = {
+                                                onSaveReciter(reciter)
+                                                expandedReciter = false
+                                            }
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -244,7 +290,7 @@ fun KhatmVersesContent(
             } else {
                 Log.d("toni", "loa: $loading")
                 if (loading) {
-                    Dialog(onDismissRequest = { },) {
+                    Dialog(onDismissRequest = { }) {
                         CircularProgressIndicator(modifier = Modifier.size(48.dp))
                     }
                 }
@@ -361,7 +407,7 @@ fun KhatmVersesContent(
 
                 QuranPlayer(
                     modifier = Modifier.align(Alignment.BottomCenter),
-                    type = PlayType.PLAYLIST(ayats, startIndex)
+                    type = PlayType.PLAYLIST(ayats, startIndex, state.selectedReciter.id)
                 )
             }
         }
@@ -400,12 +446,13 @@ fun KhatmVersesScreenPreview() {
         fontSize = 0.5f
     )
 
-    MoshafTheme(false) {
+    MoshafTheme(ThemeType.LIGHT) {
         KhatmVersesContent(
             state = dummyState,
             playerState = PlayerState(),
             onNavigateUp = {},
             onSaveFontSize = {},
+            onSaveReciter = {},
             onSaveTheme = {},
             onSaveBookmark = {},
             onLoadAnotherVerse = {},

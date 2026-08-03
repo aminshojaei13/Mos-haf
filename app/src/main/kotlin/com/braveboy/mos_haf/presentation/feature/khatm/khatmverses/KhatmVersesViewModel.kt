@@ -7,8 +7,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.braveboy.mos_haf.AppConstants.BOOKMARK
 import com.braveboy.mos_haf.AppConstants.FONT_SIZE
+import com.braveboy.mos_haf.AppConstants.RECITER
 import com.braveboy.mos_haf.data.local.entity.KhatmEntity
-import com.braveboy.mos_haf.data.repository.HezbTimeRepository
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.domain.usecase.GetKhatmQuranUseCase
@@ -19,6 +19,7 @@ import com.braveboy.mos_haf.domain.usecase.GetVerseByPageUseCase
 import com.braveboy.mos_haf.domain.usecase.UpdateKhatmQuranUseCase
 import com.braveboy.mos_haf.presentation.feature.khatm.khatmdetail.KhatmType
 import com.braveboy.mos_haf.presentation.feature.khatm.model.KhatmVersesModel
+import com.braveboy.mos_haf.presentation.feature.player.data.Reciter
 import com.braveboy.mos_haf.presentation.navigation.Screen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,6 +47,7 @@ class KhatmVersesViewModel(
     init {
         getTheme()
         getFontSize()
+        getReciter()
         viewModelScope.launch(Dispatchers.IO) {
             savedStateHandle.toRoute<Screen.KhatmVerses>().let { detail ->
                 Json.decodeFromString<KhatmVersesModel>(detail.khatm).let { detailKhatm ->
@@ -58,8 +60,8 @@ class KhatmVersesViewModel(
                     }
                 }
             }
-            state.value.khatm?.id?.let {
-                val khatm = getKhatmQuranUseCase.getKhatmById(it)
+            state.value.khatm?.id?.let { khatmId ->
+                val khatm = getKhatmQuranUseCase.getKhatmById(khatmId)
                 _state.update { it.copy(khatmDetail = khatm) }
             }
         }
@@ -368,6 +370,25 @@ class KhatmVersesViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val fontSize = preferencesRepository.readSetting(FONT_SIZE)
             _state.update { it.copy(fontSize = fontSize?.toFloatOrNull()) }
+        }
+    }
+
+    fun saveReciter(reciter: Reciter) {
+        _state.update { it.copy(selectedReciter = reciter) }
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting(RECITER, reciter.name)
+        }
+    }
+
+    fun getReciter() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val reciterName = preferencesRepository.readSetting(RECITER)
+            val reciter = try {
+                Reciter.valueOf(reciterName.orEmpty())
+            } catch (e: Exception) {
+                Reciter.ALAFASY
+            }
+            _state.update { it.copy(selectedReciter = reciter) }
         }
     }
 }

@@ -44,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.braveboy.mos_haf.R
 import com.braveboy.mos_haf.components.safeClickable
 import com.braveboy.mos_haf.domain.model.Quran
@@ -59,6 +60,7 @@ fun AyatComponent(
     verses: List<Quran>,
     translations: List<String>,
     fontSize: TextUnit,
+    translationFontSize: TextUnit = 18.sp,
     suras: List<String>? = null,
     overScrollEnable: Boolean = false,
     playingIndex: Int = -1,
@@ -229,6 +231,7 @@ fun AyatComponent(
                         translationText = translations[index],
                         ayaNumber = verse.aya.toString(),
                         fontSize = fontSize,
+                        translationFontSize = translationFontSize,
                         icon = null,
                         isHighlighted = index == playingIndex
                     )

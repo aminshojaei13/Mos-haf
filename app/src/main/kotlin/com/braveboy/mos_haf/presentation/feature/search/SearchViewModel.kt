@@ -6,11 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.braveboy.mos_haf.AppConstants.FONT_SIZE
+import com.braveboy.mos_haf.AppConstants.RECITER
 import com.braveboy.mos_haf.data.repository.PreferencesRepository
 import com.braveboy.mos_haf.domain.model.LastReadModel
 import com.braveboy.mos_haf.domain.usecase.GetQuranVersesUseCase
 import com.braveboy.mos_haf.domain.usecase.GetVerseByJozUseCase
 import com.braveboy.mos_haf.presentation.navigation.Screen
+import com.braveboy.mos_haf.presentation.feature.player.data.Reciter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +36,7 @@ class SearchViewModel(
     init {
         getTheme()
         getFontSize()
+        getReciter()
 
         viewModelScope.launch(Dispatchers.IO) {
             savedStateHandle.toRoute<Screen.Search>().let { detail ->
@@ -312,6 +315,25 @@ class SearchViewModel(
         viewModelScope.launch(Dispatchers.IO) {
             val fontSize = preferencesRepository.readSetting(FONT_SIZE)
             _state.update { it.copy(fontSize = fontSize?.toFloatOrNull()) }
+        }
+    }
+
+    fun saveReciter(reciter: Reciter) {
+        _state.update { it.copy(selectedReciter = reciter) }
+        viewModelScope.launch(Dispatchers.IO) {
+            preferencesRepository.saveSetting(RECITER, reciter.name)
+        }
+    }
+
+    fun getReciter() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val reciterName = preferencesRepository.readSetting(RECITER)
+            val reciter = try {
+                Reciter.valueOf(reciterName.orEmpty())
+            } catch (e: Exception) {
+                Reciter.ALAFASY
+            }
+            _state.update { it.copy(selectedReciter = reciter) }
         }
     }
 }

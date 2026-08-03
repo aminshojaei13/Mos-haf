@@ -37,6 +37,7 @@ import com.braveboy.mos_haf.presentation.feature.detail.toPersianNumber
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
 import com.braveboy.mos_haf.components.safeClickable
+import com.braveboy.mos_haf.ui.theme.ThemeType
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -138,7 +139,7 @@ fun SuraListScreen(navController: NavController) {
 @Preview(showBackground = true)
 @Composable
 fun SuraListScreenPreview() {
-    MoshafTheme(false) {
+    MoshafTheme(ThemeType.LIGHT) {
         SuraListScreen(rememberNavController())
     }
 }

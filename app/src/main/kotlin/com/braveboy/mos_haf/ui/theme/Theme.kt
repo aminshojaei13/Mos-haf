@@ -42,25 +42,55 @@ private val LightColorScheme = lightColorScheme(
     onSurface = Color.Black,
 )
 
+private val SepiaColorScheme = lightColorScheme(
+    primary = Color(0xFF8D6E63),
+    secondary = Color(0xFFD7CCC8),
+    tertiary = Color(0xFF5D4037),
+    background = SepiaBackground,
+    surface = SepiaSurface,
+    onPrimary = Color.White,
+    onSecondary = SepiaText,
+    onTertiary = Color(0xFF795548),
+    onBackground = SepiaText,
+    onSurface = SepiaText,
+)
+
+private val DarkBlueColorScheme = darkColorScheme(
+    primary = Color(0xFF415A77),
+    secondary = Color(0xFF778DA9),
+    tertiary = Color(0xFF1B263B),
+    background = DarkBlueBackground,
+    surface = DarkBlueSurface,
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color(0xFFE0E1DD),
+    onBackground = DarkBlueText,
+    onSurface = DarkBlueText,
+)
+
+enum class ThemeType {
+    LIGHT, DARK, SEPIA, DARK_BLUE
+}
+
 @Composable
 fun MoshafTheme(
-    darkTheme: Boolean,
+    themeType: ThemeType = ThemeType.LIGHT,
     content: @Composable () -> Unit
 ) {
-    var colorScheme by remember { mutableStateOf(LightColorScheme) }
-    LaunchedEffect(darkTheme) {
-        colorScheme = when {
-            darkTheme -> DarkColorScheme
-            else -> LightColorScheme
-        }
-
+    val colorScheme = when (themeType) {
+        ThemeType.LIGHT -> LightColorScheme
+        ThemeType.DARK -> DarkColorScheme
+        ThemeType.SEPIA -> SepiaColorScheme
+        ThemeType.DARK_BLUE -> DarkBlueColorScheme
     }
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = 
+                themeType == ThemeType.LIGHT || themeType == ThemeType.SEPIA
         }
     }
 

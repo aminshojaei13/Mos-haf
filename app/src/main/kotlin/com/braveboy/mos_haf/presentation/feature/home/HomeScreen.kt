@@ -20,9 +20,7 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,7 +38,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,8 +66,7 @@ import com.braveboy.mos_haf.presentation.navigation.Screen
 import com.braveboy.mos_haf.presentation.navigation.Screen.KhatmVerses
 import com.braveboy.mos_haf.presentation.navigation.Screen.QuranDetail
 import com.braveboy.mos_haf.ui.theme.MoshafTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.braveboy.mos_haf.ui.theme.ThemeType
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.androidx.compose.koinViewModel
@@ -82,9 +78,7 @@ fun HomeScreen(
 ) {
     val viewModel = koinViewModel<HomeViewModel>()
     val state by viewModel.state.collectAsState()
-    val themeMode by viewModel.theme.collectAsState()
     val saveAudioSetting by viewModel.saveAudio.collectAsState()
-    val scope = rememberCoroutineScope()
 
     var showSaveAudioDialog by remember { mutableStateOf(false) }
 
@@ -116,19 +110,6 @@ fun HomeScreen(
                         )
 
                     }
-                },
-                actions = {
-                    Icon(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .safeClickable {
-                                scope.launch(Dispatchers.IO) {
-                                    viewModel.saveTheme(!themeMode)
-                                }
-                            },
-                        imageVector = if (themeMode) Icons.Default.LightMode else Icons.Default.DarkMode,
-                        contentDescription = null
-                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
@@ -634,7 +615,7 @@ enum class Tile {
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    MoshafTheme(false) {
+    MoshafTheme(ThemeType.LIGHT) {
         HomeScreen(rememberNavController())
     }
 }

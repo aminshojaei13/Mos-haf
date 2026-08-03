@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 class PlayerViewController(
     private val repository: PlayerRepository,
@@ -45,7 +46,7 @@ class PlayerViewController(
         stopPositionUpdater()
         positionUpdateJob = viewModelScope.launch {
             while (true) {
-                delay(500)
+                delay(500.milliseconds)
                 exoPlayer?.let { player ->
                     _state.update { currentState ->
                         currentState.copy(
@@ -159,8 +160,9 @@ class PlayerViewController(
 
             viewModelScope.launch(Dispatchers.Main) {
                 try {
+                    val reciterId = type.reciterId ?: "Alafasy_128kbps"
                     val mediaItems = ayahs.map { (surah, ayah) ->
-                        MediaItem.fromUri(repository.getAyahUrl(surah, ayah))
+                        MediaItem.fromUri(repository.getAyahUrl(surah, ayah, reciterId))
                     }
                     exoPlayer?.apply {
                         setMediaItems(mediaItems)
